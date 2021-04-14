@@ -8,6 +8,11 @@
  * type text in serial monitor
  * text will walk trough all 2 serials
  * result is echoed to serial (usb)
+ * 
+ * 
+ * Modified to only use 2 UART pairs, 
+ * Useful to verify connection between EESP32 and marlin,
+ * and for sending gcode commands manually
 */
 
 
