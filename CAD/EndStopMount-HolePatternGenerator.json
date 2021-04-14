@@ -1,0 +1,17 @@
+{
+    "parameterSets": {
+        "design default values": {
+            "$fs": "0.15",
+            "depth": "3",
+            "extra_length": "1",
+            "extra_width": "1",
+            "hole_diameter": "2.3",
+            "hole_spacing_l": "3",
+            "hole_spacing_w": "6.4",
+            "repeat_l": "15",
+            "repeat_w": "2",
+            "rounded_radius": "0"
+        }
+    },
+    "fileFormatVersion": "1"
+}
