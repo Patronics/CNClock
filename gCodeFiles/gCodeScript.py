@@ -45,14 +45,14 @@ def horizontalBarLeft(x, y, xScale):
   return x;
 
 def verticalBarUp(x, y, yScale):
-  y = y - 100 * yScale
+  y = y - 50 * yScale
   gCode = "G1 X" + str(x) + " Y" + str(y)
   gCodeOut(gCode);
   return y;
 
 def verticalBarDown(x, y, yScale):
   
-  y = y + 100 * yScale
+  y = y + 50 * yScale
   gCode = "G1 X" + str(x) + " Y" + str(y)
   gCodeOut(gCode);
   return y;
