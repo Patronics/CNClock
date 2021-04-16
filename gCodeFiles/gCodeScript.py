@@ -1,7 +1,7 @@
 def printZero(xPad, yPad, xScale, yScale):
   x = xPad
   y = yPad
-  print("\nThis is a zero: \n")
+  print("\n;This is a zero: \n")
   markerUp();
   gotToStart(x, y);
 
@@ -18,7 +18,7 @@ def printZero(xPad, yPad, xScale, yScale):
 def printOne(xPad, yPad, xScale, yScale):
   x = xPad
   y = yPad
-  print("\nThis is a one:\n")
+  print("\n;This is a one:\n")
   markerUp();
   gotToStart(x, y);
 
@@ -61,14 +61,16 @@ def gCodeOut(gCode):
 
 def markerUp():
   #the marker is not in contact with the whiteboard
-  print("The marker is up")
+  print(";The marker is up")
+  gCodeOut("G1 Z10")
   return;
 
 def markerDown():
   #the marker is in contact with the whiteboard
-  print("The marker is down")
+  gCodeOut("G1 Z0")
+  print(";The marker is down")
   return;
 
 printZero(25, 25, 1, 1)
-printOne(25, 25, 1, 1);
+printOne(125, 25, 1, 1);
 
