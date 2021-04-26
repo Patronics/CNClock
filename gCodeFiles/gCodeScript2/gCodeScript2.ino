@@ -118,12 +118,12 @@ void segmentF(int startX, int startY, int scale){
 
 void markerUp(){
   printf(";markerUp");
-  sendCommand("M280 P0 S140");
+  sendCommand("M280 P0 S150");
 }
 
 void markerDown(){
   printf(";markerDown");
-  sendCommand("M280 P0 S86");
+  sendCommand("M280 P0 S71");
 }
 
 int reHome(bool x, bool y){
