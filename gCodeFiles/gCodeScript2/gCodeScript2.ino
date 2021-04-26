@@ -5,12 +5,21 @@
 #define COMMAND_LENGTH 255
 
 void segmentA(int startX, int startY, int scale);
+void segmentB(int startX, int startY, int scale);
+void segmentC(int startX, int startY, int scale);
+void segmentD(int startX, int startY, int scale);
+void segmentE(int startX, int startY, int scale);
 void segmentF(int startX, int startY, int scale);
+void segmentG(int startX, int startY, int scale);
 void markerUp();
 void markerDown();
 void toPrintStart(int startX, int startY);
 int reHome();
 int reHome(bool x, bool y);
+int closeX(int startX, int scale);
+int farX(int startX, int scale);
+int closeY(int startY, int scale);
+int farY(int startY, int scale);
 
 void setup() {
   Serial.begin(250000);
@@ -52,18 +61,58 @@ int sendCommand(char* command){
 
 
 void segmentA(int startX, int startY, int scale){
-  int x = (startX + 5) * 5;
-  toPrintStart(x, startY);
-  markerDown();
-  printf("G1 X%fY%d",(0.5 * scale + startX), startY);
   markerUp();
+  goToXY((startX + 5) * scale), startY);
+  markerDown();
+  goToXY((0.5 * scale + startX), startY);
+  markerUp();
+}
+
+void segmentB(int startX, int startY, int scale){
+  markerUp();
+  goToXY((0.5 * scale + startX), (startY - 5 * scale));
+  markerDown();
+  goToXY(startX, (startY - 45 * scale));
+  markerUp();  
+}
+// to do
+void segmentC(int startX, int startY, int scale){
+  markerUp();
+  goToXY((0.5 * scale + startX), (startY - 5 * scale));
+  markerDown();
+  goToXY(startX, (startY - 45 * scale));
+  markerUp();  
+}
+// to do
+void segmentD(int startX, int startY, int scale){
+  markerUp();
+  goToXY((startX + 5) * scale), startY);
+  markerDown();
+  goToXY((0.5 * scale + startX), startY);
+  markerUp();
+}
+// to do
+void segmentE(int startX, int startY, int scale){
+  markerUp();
+  goToXY(startX, (startY - 5 * scale));
+  markerDown();
+  goToXY(startX, (startY - 45 * scale));
+  markerUp();  
 }
 
 void segmentF(int startX, int startY, int scale){
   markerUp();
   goToXY(startX, ((startY - 5) * scale));
   markerDown();
-  goToXY((0.5 * scale + startX), (0.5 * scale + startY));
+  goToXY(startX, (0.5 * scale + startY));
+  markerUp();
+}
+// to do
+void segmentG(int startX, int startY, int scale){
+  markerUp();
+  goToXY((startX + 5) * scale), startY);
+  markerDown();
+  goToXY((0.5 * scale + startX), startY);
   markerUp();
 }
 
@@ -96,6 +145,14 @@ int goToXY(double x, double y){
   snprintf(nextCommand,COMMAND_LENGTH, "G1 X%fY%f",x,y);
   return sendCommand(nextCommand);
 }
+
+int closeX(int startX, int scale){return ((x + 5) * scale);}
+
+int farX(int startX, int scale){return ((0.5 * scale + closeX(startX, scale));}
+
+int closeY(int startY, int scale){return ((x + 5) * scale);}
+
+int farY(int startY, int scale){return ((0.5 * scale + closeY(startY, scale));}
 
 /*void toPrintStart(int startX, int startY){
   markerUp();
