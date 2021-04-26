@@ -17,6 +17,11 @@ void loop(){
 }
 
 
+int sendCommand(String command){
+  serial.print(command);
+}
+
+
 void segmentA(int startX, int startY, int scale){
   int x = (startX + 5) * 5;
   toPrintStart(x, startY);
