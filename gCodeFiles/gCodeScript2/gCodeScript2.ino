@@ -47,7 +47,7 @@ void loop() {
 
 
 int sendCommand(char* command){
-  Serial.print(command);
+  Serial1.print(command);
 }
 
 
