@@ -6,17 +6,10 @@ void segmentF(int startX, int startY, int scale);
 void markerUp();
 void markerDown();
 void toPrintStart(int startX, int startY);
-void setup();
-void loop();
 
-int main() {
-  setup();
-}
 
 void setup(){
-  while(true){
-    loop();
-  }
+
 }
 
 void loop(){
