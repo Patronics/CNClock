@@ -62,7 +62,7 @@ int sendCommand(char* command){
 
 void segmentA(int startX, int startY, int scale){
   markerUp();
-  goToXY((startX + 5) * scale), startY);
+  goToXY(((startX + 5) * scale), startY);
   markerDown();
   goToXY((0.5 * scale + startX), startY);
   markerUp();
@@ -84,7 +84,7 @@ void segmentC(int startX, int startY, int scale){
   markerUp();  
 }
 // to do
-void segmentD(int startX, int startY, int scale){
+/*void segmentD(int startX, int startY, int scale){
   markerUp();
   goToXY((startX + 5) * scale), startY);
   markerDown();
@@ -98,7 +98,7 @@ void segmentE(int startX, int startY, int scale){
   markerDown();
   goToXY(startX, (startY - 45 * scale));
   markerUp();  
-}
+}*/
 
 void segmentF(int startX, int startY, int scale){
   markerUp();
@@ -108,20 +108,22 @@ void segmentF(int startX, int startY, int scale){
   markerUp();
 }
 // to do
-void segmentG(int startX, int startY, int scale){
+/*void segmentG(int startX, int startY, int scale){
   markerUp();
   goToXY((startX + 5) * scale), startY);
   markerDown();
   goToXY((0.5 * scale + startX), startY);
   markerUp();
-}
+}*/
 
 void markerUp(){
   printf(";markerUp");
+  sendCommand("M280 P0 S140");
 }
 
 void markerDown(){
   printf(";markerDown");
+  sendCommand("M280 P0 S86");
 }
 
 int reHome(bool x, bool y){
@@ -146,13 +148,13 @@ int goToXY(double x, double y){
   return sendCommand(nextCommand);
 }
 
-int closeX(int startX, int scale){return ((x + 5) * scale);}
+int closeX(int startX, int scale){return ((startX + 5) * scale);}
 
-int farX(int startX, int scale){return ((0.5 * scale + closeX(startX, scale));}
+int farX(int startX, int scale){return (0.5 * scale + closeX(startX, scale));}
 
-int closeY(int startY, int scale){return ((x + 5) * scale);}
+int closeY(int startY, int scale){return ((startY + 5) * scale);}
 
-int farY(int startY, int scale){return ((0.5 * scale + closeY(startY, scale));}
+int farY(int startY, int scale){return (0.5 * scale + closeY(startY, scale));}
 
 /*void toPrintStart(int startX, int startY){
   markerUp();
