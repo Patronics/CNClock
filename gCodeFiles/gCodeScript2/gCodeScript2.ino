@@ -1,6 +1,9 @@
 #include <iostream>
 #include <stdio.h>
 
+
+#define COMMAND_LENGTH 255
+
 void segmentA(int startX, int startY, int scale);
 void segmentF(int startX, int startY, int scale);
 void markerUp();
@@ -31,11 +34,10 @@ void segmentA(int startX, int startY, int scale){
 }
 
 void segmentF(int startX, int startY, int scale){
-  toPrintStart(startX, ((startY - 5) * scale));
+  markerUp();
+  goToXY(startX, ((startY - 5) * scale));
   markerDown();
-  char* nextCommand;
-  sprintf(nextCommand, "G1 X%fY%f",(0.5 * scale + startX), (0.5 * scale + startY));
-  sendCommand(nextCommand);
+  goToXY((0.5 * scale + startX), (0.5 * scale + startY));
   markerUp();
 }
 
@@ -47,7 +49,13 @@ void markerDown(){
   printf(";markerDown");
 }
 
-void toPrintStart(int startX, int startY){
+int goToXY(double x, double y){
+  char nextCommand[COMMAND_LENGTH];
+  snprintf(nextCommand,COMMAND_LENGTH, "G1 X%fY%f",x,y);
+  sendCommand(nextCommand);
+}
+
+/*void toPrintStart(int startX, int startY){
   markerUp();
   printf("G1 X%dY%d", startX, startY);
-}
+}*/
