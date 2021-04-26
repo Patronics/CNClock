@@ -9,7 +9,7 @@ void toPrintStart(int startX, int startY);
 
 
 void setup(){
-
+  
 }
 
 void loop(){
@@ -17,8 +17,8 @@ void loop(){
 }
 
 
-int sendCommand(String command){
-  serial.print(command);
+int sendCommand(char* command){
+  Serial.print(command);
 }
 
 
@@ -33,7 +33,9 @@ void segmentA(int startX, int startY, int scale){
 void segmentF(int startX, int startY, int scale){
   toPrintStart(startX, ((startY - 5) * scale));
   markerDown();
-  printf("G1 X%fY%f",(0.5 * scale + startX), (0.5 * scale + startY));
+  char* nextCommand;
+  sprintf(nextCommand, "G1 X%fY%f",(0.5 * scale + startX), (0.5 * scale + startY));
+  sendCommand(nextCommand);
   markerUp();
 }
 
