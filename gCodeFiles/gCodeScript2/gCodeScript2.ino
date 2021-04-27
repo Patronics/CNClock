@@ -157,12 +157,20 @@ void segmentG(int startX, int startY, int scale){
 
 void markerUp(){
   printf(";markerUp\n");
-  sendCommand("M280 P0 S150");
+  #ifdef SIMULATE
+    sendCommand("G1 Z50");
+  #else
+    sendCommand("M280 P0 S150");
+  #endif
 }
 
 void markerDown(){
   printf(";markerDown\n");
-  sendCommand("M280 P0 S71");
+  #ifdef SIMULATE
+    sendCommand("G1 Z0");
+  #else
+    sendCommand("M280 P0 S71");
+  #endif
 }
 
 int reHome(bool x, bool y){
