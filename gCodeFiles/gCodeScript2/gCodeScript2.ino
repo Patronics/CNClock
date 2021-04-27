@@ -4,6 +4,11 @@
 
 #define COMMAND_LENGTH 255
 
+//comment for actual device
+//#define SIMULATE
+
+
+
 void segmentA(int startX, int startY, int scale);
 void segmentB(int startX, int startY, int scale);
 void segmentC(int startX, int startY, int scale);
@@ -15,13 +20,17 @@ void markerUp();
 void markerDown();
 void toPrintStart(int startX, int startY);
 int reHome();
+int goToXY(double x, double y);
 int reHome(bool x, bool y);
 int closeX(int startX, int scale);
 int farX(int startX, int scale);
 int closeY(int startY, int scale);
 int farY(int startY, int scale);
 
+
+
 void setup() {
+  #ifndef SIMULATE
   Serial.begin(250000);
 
   // Serial1.begin(unsigned long baud, uint32_t config, int8_t rxPin, int8_t txPin, bool invert)
@@ -30,33 +39,52 @@ void setup() {
   
   Serial1.begin(250000, SERIAL_8N1, 36, 32);
   //Serial2.begin(250000, SERIAL_8N1, 36, 37);
+  #endif
+  #ifdef SIMULATE
+    #ifdef FILEOUT
+      //TODO: open output file
+    #else //Not FILEOUT
+      printf("starting simulated output\n");
+    #endif
+  #endif
 }
 
 void loop() {
-
-  if(Serial.available()) {
-    int ch = Serial.read();
-    if (ch == '~'){
-      reHome();
+  #ifndef SIMULATE
+    if(Serial.available()) {
+      int ch = Serial.read();
+      if (ch == '~'){
+        reHome();
+      }
+      Serial1.write(ch);
+      //Serial.write(ch);
     }
-    Serial1.write(ch);
-    //Serial.write(ch);
-  }
-
-  /*if(Serial2.available()) {
-    int ch = Serial2.read();
-    Serial2.write(ch);
-  }*/
   
-  if(Serial1.available()) {
-    int ch = Serial1.read();
-    Serial.write(ch);
-  }
+    /*if(Serial2.available()) {
+      int ch = Serial2.read();
+      Serial2.write(ch);
+    }*/
+    
+    if(Serial1.available()) {
+      int ch = Serial1.read();
+      Serial.write(ch);
+    }
+  #else //ifdef SIMULATE
+    //segmentA(0,0,10);
+  #endif
 }
 
 
 int sendCommand(char* command){
-  Serial1.print(command);
+  #ifndef SIMULATE
+    Serial1.print(command);
+    Serial1.print("\n");
+  #endif
+  #ifdef SIMULATE
+    #ifndef FILEOUT
+      printf("%s\n",command);
+    #endif
+  #endif
 }
 
 
@@ -160,3 +188,11 @@ int farY(int startY, int scale){return (0.5 * scale + closeY(startY, scale));}
   markerUp();
   printf("G1 X%dY%d", startX, startY);
 }*/
+
+
+#ifdef SIMULATE
+  int main(void){
+    setup();
+    while(true){loop();}
+  }
+#endif
