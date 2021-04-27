@@ -22,10 +22,10 @@ void toPrintStart(int startX, int startY);
 int reHome();
 int goToXY(double x, double y);
 int reHome(bool x, bool y);
-int closeX(int startX, int scale);
-int farX(int startX, int scale);
-int closeY(int startY, int scale);
-int farY(int startY, int scale);
+int leftX(int startX, int scale);
+int rightX(int startX, int scale);
+int topY(int startY, int scale);
+int bottomY(int startY, int scale);
 
 
 
@@ -90,59 +90,59 @@ int sendCommand(char* command){
 
 void segmentA(int startX, int startY, int scale){
   markerUp();
-  goToXY(((startX + 5) * scale), startY);
+  goToXY(leftX(startX, scale), topY(startY, scale));
   markerDown();
-  goToXY((0.5 * scale + startX), startY);
+  goToXY(rightX(startX, scale), topY(startY, scale));
   markerUp();
 }
 
 void segmentB(int startX, int startY, int scale){
   markerUp();
-  goToXY((0.5 * scale + startX), (startY - 5 * scale));
+  goToXY(rightX(startX, scale), topY(startY, scale));
   markerDown();
-  goToXY(startX, (startY - 45 * scale));
+  goToXY(rightX(startX, scale), bottomY(startY, scale));
   markerUp();  
 }
-// to do
+
 void segmentC(int startX, int startY, int scale){
   markerUp();
-  goToXY((0.5 * scale + startX), (startY - 5 * scale));
+  goToXY(rightX(startX, scale), bottomY(startY, scale));
   markerDown();
-  goToXY(startX, (startY - 45 * scale));
+  goToXY(rightX(startX, scale), bottomY(startY, scale) * 2);
   markerUp();  
 }
-// to do
-/*void segmentD(int startX, int startY, int scale){
+
+void segmentD(int startX, int startY, int scale){
   markerUp();
-  goToXY((startX + 5) * scale), startY);
+  goToXY(leftX(startX, scale), bottomY(startY, scale) * 2);
   markerDown();
-  goToXY((0.5 * scale + startX), startY);
+  goToXY(rightX(startX, scale), bottomY(startY, scale) * 2);
   markerUp();
 }
-// to do
+
 void segmentE(int startX, int startY, int scale){
   markerUp();
-  goToXY(startX, (startY - 5 * scale));
+  goToXY(leftX(startX, scale), bottomY(startY, scale));
   markerDown();
-  goToXY(startX, (startY - 45 * scale));
-  markerUp();  
-}*/
+  goToXY(leftX(startX, scale), bottomY(startY, scale) * 2);
+  markerUp();   
+}
 
 void segmentF(int startX, int startY, int scale){
   markerUp();
-  goToXY(startX, ((startY - 5) * scale));
+  goToXY(leftX(startX, scale), topY(startY, scale));
   markerDown();
-  goToXY(startX, (0.5 * scale + startY));
+  goToXY(leftX(startX, scale), bottomY(startY, scale));
+  markerUp(); 
+}
+
+void segmentG(int startX, int startY, int scale){
+  markerUp();
+  goToXY(leftX(startX, scale), bottomY(startY, scale));
+  markerDown();
+  goToXY(rightX(startX, scale), bottomY(startY, scale));
   markerUp();
 }
-// to do
-/*void segmentG(int startX, int startY, int scale){
-  markerUp();
-  goToXY((startX + 5) * scale), startY);
-  markerDown();
-  goToXY((0.5 * scale + startX), startY);
-  markerUp();
-}*/
 
 void markerUp(){
   printf(";markerUp");
@@ -176,13 +176,13 @@ int goToXY(double x, double y){
   return sendCommand(nextCommand);
 }
 
-int closeX(int startX, int scale){return ((startX + 5) * scale);}
+int leftX(int startX, int scale){return ((startX + 5) * scale);}
 
-int farX(int startX, int scale){return (0.5 * scale + closeX(startX, scale));}
+int rightX(int startX, int scale){return (0.5 * scale + leftX(startX, scale));}
 
-int closeY(int startY, int scale){return ((startY + 5) * scale);}
+int topY(int startY, int scale){return ((startY + 5) * scale);}
 
-int farY(int startY, int scale){return (0.5 * scale + closeY(startY, scale));}
+int bottomY(int startY, int scale){return (0.5 * scale + topY(startY, scale));}
 
 /*void toPrintStart(int startX, int startY){
   markerUp();
