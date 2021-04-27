@@ -133,17 +133,22 @@ void segmentD(int startX, int startY, int scale){
 
 void segmentE(int startX, int startY, int scale){
   markerUp();
-  goToXY(leftX(startX, scale), bottomY(startY, scale));
+  //goToXY(leftX(startX, scale), bottomY(startY, scale));
+  goToXY(startX, startY);
   markerDown();
-  goToXY(leftX(startX, scale), bottomY(startY, scale) * 2);
+  //goToXY(leftX(startX, scale), bottomY(startY, scale) * 2);
+  goToXY(startX, startY + scale);
   markerUp();   
 }
 
 void segmentF(int startX, int startY, int scale){
   markerUp();
-  goToXY(leftX(startX, scale), topY(startY, scale));
+  //goToXY(leftX(startX, scale), topY(startY, scale));
+  goToXY(startX, startY + scale + (scale * 0.2));
   markerDown();
-  goToXY(leftX(startX, scale), bottomY(startY, scale));
+  //goToXY(leftX(startX, scale), bottomY(startY, scale));
+  goToXY(startX, startY + (scale + scale) + (scale * 0.2));
+
   markerUp(); 
 }
 
