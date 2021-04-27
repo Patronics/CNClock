@@ -5,7 +5,7 @@
 #define COMMAND_LENGTH 255
 
 //comment for actual device
-//#define SIMULATE
+#define SIMULATE
 
 
 
@@ -26,7 +26,7 @@ int leftX(int startX, int scale);
 int rightX(int startX, int scale);
 int topY(int startY, int scale);
 int bottomY(int startY, int scale);
-
+void digitZero(int startX, int startY, int scale);
 
 
 void setup() {
@@ -45,6 +45,7 @@ void setup() {
       //TODO: open output file
     #else //Not FILEOUT
       printf("starting simulated output\n");
+      digitZero(0, 0, 50);
     #endif
   #endif
 }
@@ -85,6 +86,16 @@ int sendCommand(char* command){
       printf("%s\n",command);
     #endif
   #endif
+}
+
+void digitZero(int startX, int startY, int scale){
+  segmentA(startX, startY, scale);
+  segmentB(startX, startY, scale);
+  segmentC(startX, startY, scale);
+  segmentD(startX, startY, scale);
+  segmentE(startX, startY, scale);
+  segmentF(startX, startY, scale);
+  segmentG(startX, startY, scale);
 }
 
 
@@ -145,12 +156,12 @@ void segmentG(int startX, int startY, int scale){
 }
 
 void markerUp(){
-  printf(";markerUp");
+  printf(";markerUp\n");
   sendCommand("M280 P0 S150");
 }
 
 void markerDown(){
-  printf(";markerDown");
+  printf(";markerDown\n");
   sendCommand("M280 P0 S71");
 }
 
