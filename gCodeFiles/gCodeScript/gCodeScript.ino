@@ -5,7 +5,7 @@
 #define COMMAND_LENGTH 255
 
 //comment for actual device
-#define SIMULATE
+//#define SIMULATE
 
 #define SIMULATE_TIME
 
@@ -101,13 +101,14 @@ void loop() {
 }
 
 void doDemo(){
-  digitEight(0, 0, 50);
-  digitTwo(100, 0, 50);
+  digitEight(0, 0, 65);
+  digitEight(100, 0, 65);
+  digitEight(200, 0, 65);
 }
 
 int sendCommand(char* command){
   
-    delay(2000);
+    delay(500);
   #ifndef SIMULATE
     Serial1.print(command);
     Serial1.print("\n");
@@ -210,7 +211,7 @@ void digitNine(int startX, int startY, int scale){
 void segmentA(int startX, int startY, int scale){
   markerUp();
   //(x + space, y + 2 * scale)
-  goToXY(startX + (0.2 * scale), startY + (2 * scale));
+  fastToXY(startX + (0.2 * scale), startY + (2 * scale));
   markerDown();
   //(x + scale - space, y + 2 * scale)
   goToXY(startX + scale - (0.2 * scale), startY + (2 * scale));
@@ -220,7 +221,7 @@ void segmentA(int startX, int startY, int scale){
 void segmentB(int startX, int startY, int scale){
   markerUp();
   //(x + scale, y + scale + space)
-  goToXY(startX + scale, startY + scale + (0.2 * scale));
+  fastToXY(startX + scale, startY + scale + (0.2 * scale));
   markerDown();
   //(x + scale, y + 2 * scale - space)
   goToXY(startX + scale, startY + (2 * scale) - (0.2 * scale));
@@ -230,7 +231,7 @@ void segmentB(int startX, int startY, int scale){
 void segmentC(int startX, int startY, int scale){
   markerUp();
   //(x + scale, y + space)
-  goToXY(startX + scale, startY + (0.2 * scale));
+  fastToXY(startX + scale, startY + (0.2 * scale));
   markerDown();
   //(x + scale, y + scale - space)
   goToXY(startX + scale, startY + scale - (0.2 * scale));
@@ -240,7 +241,7 @@ void segmentC(int startX, int startY, int scale){
 void segmentD(int startX, int startY, int scale){
   markerUp();
   //(x + space, y)
-  goToXY(startX + (0.2 * scale), startY);
+  fastToXY(startX + (0.2 * scale), startY);
   markerDown();
   //(x + scale - space, y)
   goToXY(startX + scale - (0.2 * scale), startY);
@@ -250,7 +251,7 @@ void segmentD(int startX, int startY, int scale){
 void segmentE(int startX, int startY, int scale){
   markerUp();
   //(x, y + space)
-  goToXY(startX, startY + 0.2 * scale);
+  fastToXY(startX, startY + 0.2 * scale);
   markerDown();
   //(x, y + scale - space)
   goToXY(startX, startY + scale - 0.2 * scale);
@@ -260,7 +261,7 @@ void segmentE(int startX, int startY, int scale){
 void segmentF(int startX, int startY, int scale){
   markerUp();
   //(x, y + scale + space)
-  goToXY(startX, startY + scale + (0.2 * scale));
+  fastToXY(startX, startY + scale + (0.2 * scale));
   markerDown();
   //(x, y + 2 * scale - space)
   goToXY(startX, startY + (2 * scale) - (0.2 * scale));
@@ -270,7 +271,7 @@ void segmentF(int startX, int startY, int scale){
 void segmentG(int startX, int startY, int scale){
   markerUp();
   //(x + space, y + scale)
-  goToXY(startX + (0.2 * scale), startY + scale);
+  fastToXY(startX + (0.2 * scale), startY + scale);
   markerDown();
   //(x + scale - space, y + scale)
   goToXY(startX + scale - (0.2 * scale), startY + scale);
@@ -282,7 +283,7 @@ void markerUp(){
   #ifdef SIMULATE
     sendCommand("G1 Z50");
   #else
-    sendCommand("M280 P0 S80");
+    sendCommand("M280 P0 S85");
   #endif
 }
 
@@ -300,7 +301,7 @@ void markerDown(){
   #ifdef SIMULATE
     sendCommand("G1 Z0");
   #else
-    sendCommand("M280 P0 S71");
+    sendCommand("M280 P0 S74");
   #endif
 }
 
@@ -323,7 +324,13 @@ int reHome(){
 
 int goToXY(double x, double y){
   char nextCommand[COMMAND_LENGTH];
-  snprintf(nextCommand,COMMAND_LENGTH, "G1 X%fY%f",x,y);
+  snprintf(nextCommand,COMMAND_LENGTH, "G1 X%fY%f F10000",x,y);
+  return sendCommand(nextCommand);
+}
+
+int fastToXY(double x, double y){
+  char nextCommand[COMMAND_LENGTH];
+  snprintf(nextCommand,COMMAND_LENGTH, "G0 X%fY%f F30000",x,y);
   return sendCommand(nextCommand);
 }
 
