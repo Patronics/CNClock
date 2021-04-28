@@ -38,6 +38,7 @@ int rightX(int startX, int scale);
 int topY(int startY, int scale);
 int bottomY(int startY, int scale);
 */
+void digitForn(int startX, int startY, int scale);
 void digitZero(int startX, int startY, int scale);
 void digitOne(int startX, int startY, int scale);
 void digitTwo(int startX, int startY, int scale);
@@ -118,6 +119,17 @@ int sendCommand(char* command){
     #endif
   #endif
 }
+
+void digitForm(int startX, int startY, int scale){
+  segmentF(int startX, int startY, int scale);
+  segmentA(int startX, int startY, int scale);
+  segmentB(int startX, int startY, int scale);
+  segmentG(int startX, int startY, int scale);
+  segmentE(int startX, int startY, int scale);
+  segmentD(int startX, int startY, int scale);
+  segmentC(int startX, int startY, int scale);
+}
+
 
 void digitZero(int startX, int startY, int scale){
   int ms = 1;
@@ -219,11 +231,11 @@ void segmentA(int startX, int startY, int scale){
 
 void segmentB(int startX, int startY, int scale){
   markerUp();
+  //(x + scale, y + 2 * scale - space)
+  goToXY(startX + scale, startY + (2 * scale) - (0.2 * scale))
+  markerDown();
   //(x + scale, y + scale + space)
   goToXY(startX + scale, startY + scale + (0.2 * scale));
-  markerDown();
-  //(x + scale, y + 2 * scale - space)
-  goToXY(startX + scale, startY + (2 * scale) - (0.2 * scale));
   markerUp(); 
 }
 
@@ -249,11 +261,11 @@ void segmentD(int startX, int startY, int scale){
 
 void segmentE(int startX, int startY, int scale){
   markerUp();
-  //(x, y + space)
-  goToXY(startX, startY + 0.2 * scale);
-  markerDown();
   //(x, y + scale - space)
   goToXY(startX, startY + scale - 0.2 * scale);
+  markerDown();
+  //(x, y + space)
+  goToXY(startX, startY + 0.2 * scale);
   markerUp();   
 }
 
@@ -269,11 +281,11 @@ void segmentF(int startX, int startY, int scale){
 
 void segmentG(int startX, int startY, int scale){
   markerUp();
-  //(x + space, y + scale)
-  goToXY(startX + (0.2 * scale), startY + scale);
-  markerDown();
   //(x + scale - space, y + scale)
   goToXY(startX + scale - (0.2 * scale), startY + scale);
+  markerDown();
+  //(x + space, y + scale)
+  goToXY(startX + (0.2 * scale), startY + scale);
   markerUp();
 }
 
