@@ -53,6 +53,7 @@ void digitNine(int startX, int startY, int scale);
 
 
 void setup() {
+  printf(";commands:\n Valid GCode, \n @ to rehome, \n ~ to draw demo\n");
   #ifndef SIMULATE
   Serial.begin(250000);
 
@@ -80,10 +81,11 @@ void loop() {
       if (ch == '~'){
         doDemo();
       }
-      if (ch == '@'){
+      else if (ch == '@'){
         reHome();
+      } else {
+        Serial1.write(ch);
       }
-      Serial1.write(ch);
       //Serial.write(ch);
     }
   
@@ -105,6 +107,7 @@ void doDemo(){
   digitForm(0, 0, 65);
   digitForm(100, 0, 65);
   digitForm(200, 0, 65);
+  markerHome();
 }
 
 int sendCommand(char* command){
