@@ -69,6 +69,9 @@ void loop() {
       if (ch == '~'){
         doDemo();
       }
+      if (ch == '@'){
+        reHome();
+      }
       Serial1.write(ch);
       //Serial.write(ch);
     }
