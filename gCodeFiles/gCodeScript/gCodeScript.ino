@@ -38,7 +38,7 @@ int rightX(int startX, int scale);
 int topY(int startY, int scale);
 int bottomY(int startY, int scale);
 */
-void digitForn(int startX, int startY, int scale);
+void digitForm(int startX, int startY, int scale);
 void digitZero(int startX, int startY, int scale);
 void digitOne(int startX, int startY, int scale);
 void digitTwo(int startX, int startY, int scale);
@@ -102,9 +102,9 @@ void loop() {
 }
 
 void doDemo(){
-  digitEight(0, 0, 65);
-  digitEight(100, 0, 65);
-  digitEight(200, 0, 65);
+  digitForm(0, 0, 65);
+  digitForm(100, 0, 65);
+  digitForm(200, 0, 65);
 }
 
 int sendCommand(char* command){
@@ -122,13 +122,16 @@ int sendCommand(char* command){
 }
 
 void digitForm(int startX, int startY, int scale){
-  segmentF(int startX, int startY, int scale);
-  segmentA(int startX, int startY, int scale);
-  segmentB(int startX, int startY, int scale);
-  segmentG(int startX, int startY, int scale);
-  segmentE(int startX, int startY, int scale);
-  segmentD(int startX, int startY, int scale);
-  segmentC(int startX, int startY, int scale);
+  markerUp();
+  fastToXY(startX,startY);
+  delay(500);
+  segmentF(startX, startY, scale);
+  segmentA(startX, startY, scale);
+  segmentB(startX, startY, scale);
+  segmentG(startX, startY, scale);
+  segmentE(startX, startY, scale);
+  segmentD(startX, startY, scale);
+  segmentC(startX, startY, scale);
 }
 
 
@@ -233,7 +236,7 @@ void segmentA(int startX, int startY, int scale){
 void segmentB(int startX, int startY, int scale){
   markerUp();
   //(x + scale, y + 2 * scale - space)
-  fastToXY(startX + scale, startY + (2 * scale) - (0.2 * scale))
+  fastToXY(startX + scale, startY + (2 * scale) - (0.2 * scale));
   markerDown();
   markerDown();
   //(x + scale, y + 2 * scale - space)
@@ -339,13 +342,13 @@ int reHome(){
 
 int goToXY(double x, double y){
   char nextCommand[COMMAND_LENGTH];
-  snprintf(nextCommand,COMMAND_LENGTH, "G1 X%fY%f F10000",x,y);
+  snprintf(nextCommand,COMMAND_LENGTH, "G1 X%fY%f F8000",x,y);
   return sendCommand(nextCommand);
 }
 
 int fastToXY(double x, double y){
   char nextCommand[COMMAND_LENGTH];
-  snprintf(nextCommand,COMMAND_LENGTH, "G0 X%fY%f F30000",x,y);
+  snprintf(nextCommand,COMMAND_LENGTH, "G0 X%fY%f F15000",x,y);
   return sendCommand(nextCommand);
 }
 
