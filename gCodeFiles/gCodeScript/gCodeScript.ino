@@ -5,7 +5,15 @@
 #define COMMAND_LENGTH 255
 
 //comment for actual device
-//#define SIMULATE
+#define SIMULATE
+
+#define SIMULATE_TIME
+
+#ifdef SIMULATE
+  #include <unistd.h>
+  void delay(int mill);
+#endif
+
 
 
 
@@ -20,6 +28,8 @@ void markerUp();
 void markerDown();
 void toPrintStart(int startX, int startY);
 int reHome();
+void doDemo();
+void markerHome();
 int goToXY(double x, double y);
 int reHome(bool x, bool y);
 /* non used prototypes from previous algorithm
@@ -96,6 +106,7 @@ void doDemo(){
 }
 
 int sendCommand(char* command){
+  
     delay(2000);
   #ifndef SIMULATE
     Serial1.print(command);
@@ -336,5 +347,11 @@ int bottomY(int startY, int scale){return (0.5 * scale - topY(startY, scale));}
   int main(void){
     setup();
     while(true){loop();}
+  }
+
+  void delay(int mill){
+    #ifdef SIMULATE_TIME
+      usleep(mill*1000);
+    #endif
   }
 #endif
