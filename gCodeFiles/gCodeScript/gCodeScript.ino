@@ -22,11 +22,23 @@ void toPrintStart(int startX, int startY);
 int reHome();
 int goToXY(double x, double y);
 int reHome(bool x, bool y);
+/* non used prototypes from previous algorithm
 int leftX(int startX, int scale);
 int rightX(int startX, int scale);
 int topY(int startY, int scale);
 int bottomY(int startY, int scale);
+*/
 void digitZero(int startX, int startY, int scale);
+void digitOne(int startX, int startY, int scale);
+void digitTwo(int startX, int startY, int scale);
+void digitThree(int startX, int startY, int scale);
+void digitFour(int startX, int startY, int scale);
+void digitFive(int startX, int startY, int scale);
+void digitSix(int startX, int startY, int scale);
+void digitSeven(int startX, int startY, int scale);
+void digitEight(int startX, int startY, int scale);
+void digitNine(int startX, int startY, int scale);
+
 
 
 void setup() {
@@ -95,68 +107,146 @@ void digitZero(int startX, int startY, int scale){
   segmentD(startX, startY, scale);
   segmentE(startX, startY, scale);
   segmentF(startX, startY, scale);
+}
+
+void digitOne(int startX, int startY, int scale){
+  segmentB(startX, startY, scale);
+  segmentC(startX, startY, scale);
+}
+
+void digitTwo(int startX, int startY, int scale){
+  segmentA(startX, startY, scale);
+  segmentB(startX, startY, scale);
+  segmentD(startX, startY, scale);
+  segmentE(startX, startY, scale);
+  segmentG(startX, startY, scale);
+}
+
+void digitThree(int startX, int startY, int scale){
+  segmentA(startX, startY, scale);
+  segmentB(startX, startY, scale);
+  segmentC(startX, startY, scale);
+  segmentD(startX, startY, scale);
+  segmentG(startX, startY, scale);
+}
+
+void digitFour(int startX, int startY, int scale){
+  segmentB(startX, startY, scale);
+  segmentC(startX, startY, scale);
+  segmentD(startX, startY, scale);
+  segmentF(startX, startY, scale);
+  segmentG(startX, startY, scale);
+}
+
+void digitFive(int startX, int startY, int scale){
+  segmentA(startX, startY, scale);
+  segmentC(startX, startY, scale);
+  segmentD(startX, startY, scale);
+  segmentF(startX, startY, scale);
+  segmentG(startX, startY, scale);
+}
+
+void digitSix(int startX, int startY, int scale){
+  segmentA(startX, startY, scale);
+  segmentC(startX, startY, scale);
+  segmentD(startX, startY, scale);
+  segmentE(startX, startY, scale);
+  segmentF(startX, startY, scale);
+  segmentG(startX, startY, scale);
+}
+
+void digitSeven(int startX, int startY, int scale){
+  segmentA(startX, startY, scale);
+  segmentB(startX, startY, scale);
+  segmentC(startX, startY, scale);
+}
+
+void digitEight(int startX, int startY, int scale){
+  segmentA(startX, startY, scale);
+  segmentB(startX, startY, scale);
+  segmentC(startX, startY, scale);
+  segmentD(startX, startY, scale);
+  segmentE(startX, startY, scale);
+  segmentF(startX, startY, scale);
+  segmentG(startX, startY, scale);
+}
+
+void digitNine(int startX, int startY, int scale){
+  segmentA(startX, startY, scale);
+  segmentB(startX, startY, scale);
+  segmentC(startX, startY, scale);
+  segmentF(startX, startY, scale);
   segmentG(startX, startY, scale);
 }
 
 
 void segmentA(int startX, int startY, int scale){
   markerUp();
-  goToXY(leftX(startX, scale), topY(startY, scale));
+  //(x + space, y + 2 * scale)
+  goToXY(startX + (0.2 * scale), startY + (2 * scale));
   markerDown();
-  goToXY(rightX(startX, scale), topY(startY, scale));
+  //(x + scale - space, y + 2 * scale)
+  goToXY(startX + scale - (0.2 * scale), startY + (2 * scale));
   markerUp();
 }
 
 void segmentB(int startX, int startY, int scale){
   markerUp();
-  goToXY(rightX(startX, scale), topY(startY, scale));
+  //(x + scale, y + scale + space)
+  goToXY(startX + scale, startY + scale + (0.2 * scale));
   markerDown();
-  goToXY(rightX(startX, scale), bottomY(startY, scale));
-  markerUp();  
+  //(x + scale, y + 2 * scale - space)
+  goToXY(startX + scale, startY + (2 * scale) - (0.2 * scale));
+  markerUp(); 
 }
 
 void segmentC(int startX, int startY, int scale){
   markerUp();
-  goToXY(rightX(startX, scale), bottomY(startY, scale));
+  //(x + scale, y + space)
+  goToXY(startX + scale, startY + (0.2 * scale));
   markerDown();
-  goToXY(rightX(startX, scale), bottomY(startY, scale) * 2);
-  markerUp();  
+  //(x + scale, y + scale - space)
+  goToXY(startX + scale, startY + scale - (0.2 * scale));
+  markerUp();   
 }
 
 void segmentD(int startX, int startY, int scale){
   markerUp();
-  goToXY(leftX(startX, scale), bottomY(startY, scale) * 2);
+  //(x + space, y)
+  goToXY(startX + (0.2 * scale), startY);
   markerDown();
-  goToXY(rightX(startX, scale), bottomY(startY, scale) * 2);
+  //(x + scale - space, y)
+  goToXY(startX + scale - (0.2 * scale), startY);
   markerUp();
 }
 
 void segmentE(int startX, int startY, int scale){
   markerUp();
-  //goToXY(leftX(startX, scale), bottomY(startY, scale));
-  goToXY(startX, startY);
+  //(x, y + space)
+  goToXY(startX, startY + 0.2 * scale);
   markerDown();
-  //goToXY(leftX(startX, scale), bottomY(startY, scale) * 2);
-  goToXY(startX, startY + scale);
+  //(x, y + scale - space)
+  goToXY(startX, startY + scale - 0.2 * scale);
   markerUp();   
 }
 
 void segmentF(int startX, int startY, int scale){
   markerUp();
-  //goToXY(leftX(startX, scale), topY(startY, scale));
-  goToXY(startX, startY + scale + (scale * 0.2));
+  //(x, y + scale + space)
+  goToXY(startX, startY + scale + (0.2 * scale));
   markerDown();
-  //goToXY(leftX(startX, scale), bottomY(startY, scale));
-  goToXY(startX, startY + (scale + scale) + (scale * 0.2));
-
+  //(x, y + 2 * scale - space)
+  goToXY(startX, startY + (2 * scale) - (0.2 * scale));
   markerUp(); 
 }
 
 void segmentG(int startX, int startY, int scale){
   markerUp();
-  goToXY(leftX(startX, scale), bottomY(startY, scale));
+  //(x + space, y + scale)
+  goToXY(startX + (0.2 * scale), startY + scale);
   markerDown();
-  goToXY(rightX(startX, scale), bottomY(startY, scale));
+  //(x + scale - space, y + scale)
+  goToXY(startX + scale - (0.2 * scale), startY + scale);
   markerUp();
 }
 
@@ -200,13 +290,15 @@ int goToXY(double x, double y){
   return sendCommand(nextCommand);
 }
 
-int leftX(int startX, int scale){return ((startX + 5) * scale);}
+/* non used  functions from previous algorithm
+int leftX(int startX, int scale){return ((startX + scale));}
 
-int rightX(int startX, int scale){return (0.5 * scale + leftX(startX, scale));}
+int rightX(int startX, int scale){return (0.5 * scale - leftX(startX, scale));}
 
-int topY(int startY, int scale){return ((startY + 5) * scale);}
+int topY(int startY, int scale){return ((startY + scale));}
 
-int bottomY(int startY, int scale){return (0.5 * scale + topY(startY, scale));}
+int bottomY(int startY, int scale){return (0.5 * scale - topY(startY, scale));}
+*/
 
 /*void toPrintStart(int startX, int startY){
   markerUp();
