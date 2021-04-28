@@ -5,7 +5,7 @@
 #define COMMAND_LENGTH 255
 
 //comment for actual device
-#define SIMULATE
+//#define SIMULATE
 
 
 
@@ -57,7 +57,7 @@ void setup() {
       //TODO: open output file
     #else //Not FILEOUT
       printf("starting simulated output\n");
-      digitZero(0, 0, 50);
+      doDemo();
     #endif
   #endif
 }
@@ -67,7 +67,7 @@ void loop() {
     if(Serial.available()) {
       int ch = Serial.read();
       if (ch == '~'){
-        reHome();
+        doDemo();
       }
       Serial1.write(ch);
       //Serial.write(ch);
@@ -87,8 +87,13 @@ void loop() {
   #endif
 }
 
+void doDemo(){
+  digitEight(0, 0, 50);
+  digitTwo(100, 0, 50);
+}
 
 int sendCommand(char* command){
+    delay(2000);
   #ifndef SIMULATE
     Serial1.print(command);
     Serial1.print("\n");
@@ -101,12 +106,20 @@ int sendCommand(char* command){
 }
 
 void digitZero(int startX, int startY, int scale){
+  int ms = 1;
+  delay(ms);
   segmentA(startX, startY, scale);
+  delay(ms);
   segmentB(startX, startY, scale);
+  delay(ms);
   segmentC(startX, startY, scale);
+  delay(ms);
   segmentD(startX, startY, scale);
+  delay(ms);
   segmentE(startX, startY, scale);
+  delay(ms);
   segmentF(startX, startY, scale);
+  delay(ms);
 }
 
 void digitOne(int startX, int startY, int scale){
@@ -255,6 +268,15 @@ void markerUp(){
   #ifdef SIMULATE
     sendCommand("G1 Z50");
   #else
+    sendCommand("M280 P0 S80");
+  #endif
+}
+
+void markerHome(){
+  printf(";markerRaised\n");
+  #ifdef SIMULATE
+    sendCommand("G1 Z100");
+  #else
     sendCommand("M280 P0 S150");
   #endif
 }
@@ -269,6 +291,7 @@ void markerDown(){
 }
 
 int reHome(bool x, bool y){
+  markerHome();
   char xChar = ' ';
   if (x){xChar='X';}
   char yChar = ' ';
