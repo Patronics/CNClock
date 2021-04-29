@@ -5,7 +5,7 @@
 #define COMMAND_LENGTH 255
 
 //comment for actual device
-//#define SIMULATE
+#define SIMULATE
 
 #define SIMULATE_TIME
 
@@ -31,6 +31,7 @@ int reHome();
 void doDemo();
 void markerHome();
 int goToXY(double x, double y);
+int fastToXY(double x, double y);
 int reHome(bool x, bool y);
 /* non used prototypes from previous algorithm
 int leftX(int startX, int scale);
@@ -104,10 +105,24 @@ void loop() {
 }
 
 void doDemo(){
+  
   digitForm(0, 0, 65);
   digitForm(100, 0, 65);
   digitForm(200, 0, 65);
   markerHome();
+
+  /*used to check all gigits are properly formed
+  digitZero(0, 0, 65);
+  digitOne(100, 0, 65);
+  digitTwo(200, 0, 65);
+  digitThree(300, 0, 65);
+  digitFour(400, 0, 65);
+  digitFive(500, 0, 65);
+  digitSix(600, 0, 65);
+  digitSeven(700, 0, 65);
+  digitEight(800, 0l 65);
+  digitNine(900, 0, 65);
+  */
 }
 
 int sendCommand(char* command){
@@ -139,6 +154,19 @@ void digitForm(int startX, int startY, int scale){
 
 
 void digitZero(int startX, int startY, int scale){
+  markerUp();
+  fastToXY(startX,startY);
+  delay(500);
+  segmentF(startX, startY, scale);
+  segmentA(startX, startY, scale);
+  segmentB(startX, startY, scale);
+  //delay here? Marker up through segment G
+  segmentE(startX, startY, scale);
+  segmentD(startX, startY, scale);
+  segmentC(startX, startY, scale);
+ 
+  
+  /* previous implimentation of digit zero
   int ms = 1;
   delay(ms);
   segmentA(startX, startY, scale);
@@ -153,76 +181,112 @@ void digitZero(int startX, int startY, int scale){
   delay(ms);
   segmentF(startX, startY, scale);
   delay(ms);
+  */
 }
 
 void digitOne(int startX, int startY, int scale){
+  markerUp();
+  fastToXY(startX,startY);
+  delay(500);
   segmentB(startX, startY, scale);
+  //delay here? Skips a bunch, goes all the way down, then up to the middle
   segmentC(startX, startY, scale);
 }
 
 void digitTwo(int startX, int startY, int scale){
+  markerUp();
+  fastToXY(startX,startY);
+  delay(500);
   segmentA(startX, startY, scale);
   segmentB(startX, startY, scale);
-  segmentD(startX, startY, scale);
-  segmentE(startX, startY, scale);
   segmentG(startX, startY, scale);
+  segmentE(startX, startY, scale);
+  segmentD(startX, startY, scale);
 }
 
 void digitThree(int startX, int startY, int scale){
+  markerUp();
+  fastToXY(startX,startY);
+  delay(500);
   segmentA(startX, startY, scale);
   segmentB(startX, startY, scale);
-  segmentC(startX, startY, scale);
-  segmentD(startX, startY, scale);
   segmentG(startX, startY, scale);
+  // delay here? marker up through segment E 
+  segmentD(startX, startY, scale);
+  segmentC(startX, startY, scale);
 }
 
 void digitFour(int startX, int startY, int scale){
-  segmentB(startX, startY, scale);
-  segmentC(startX, startY, scale);
-  segmentD(startX, startY, scale);
+  markerUp();
+  fastToXY(startX,startY);
+  delay(500);
   segmentF(startX, startY, scale);
+  //delay here? marker up through segment A
+  segmentB(startX, startY, scale);
   segmentG(startX, startY, scale);
+  //delay here? marker up through segments E and D
+  segmentC(startX, startY, scale);
 }
 
 void digitFive(int startX, int startY, int scale){
-  segmentA(startX, startY, scale);
-  segmentC(startX, startY, scale);
-  segmentD(startX, startY, scale);
+  markerUp();
+  fastToXY(startX,startY);
+  delay(500);
   segmentF(startX, startY, scale);
+  segmentA(startX, startY, scale);
+  //delay here? marker up through segment B
   segmentG(startX, startY, scale);
+  //delay here? marker up through segment g
+  segmentD(startX, startY, scale);
+  segmentC(startX, startY, scale);
 }
 
 void digitSix(int startX, int startY, int scale){
-  segmentA(startX, startY, scale);
-  segmentC(startX, startY, scale);
-  segmentD(startX, startY, scale);
-  segmentE(startX, startY, scale);
+  markerUp();
+  fastToXY(startX,startY);
+  delay(500);
   segmentF(startX, startY, scale);
+  segmentA(startX, startY, scale);
+  //delay here? marker up through segment B
   segmentG(startX, startY, scale);
+  segmentE(startX, startY, scale);
+  segmentD(startX, startY, scale);
+  segmentC(startX, startY, scale);
 }
 
 void digitSeven(int startX, int startY, int scale){
+  markerUp();
+  fastToXY(startX,startY);
+  delay(500);
   segmentA(startX, startY, scale);
   segmentB(startX, startY, scale);
+  //delay here? marker up through segments G, E and D
   segmentC(startX, startY, scale);
 }
 
 void digitEight(int startX, int startY, int scale){
+  markerUp();
+  fastToXY(startX,startY);
+  delay(500);
+  segmentF(startX, startY, scale);
   segmentA(startX, startY, scale);
   segmentB(startX, startY, scale);
-  segmentC(startX, startY, scale);
-  segmentD(startX, startY, scale);
-  segmentE(startX, startY, scale);
-  segmentF(startX, startY, scale);
   segmentG(startX, startY, scale);
+  segmentE(startX, startY, scale);
+  segmentD(startX, startY, scale);
+  segmentC(startX, startY, scale);
 }
 
 void digitNine(int startX, int startY, int scale){
+  markerUp();
+  fastToXY(startX,startY);
+  delay(500);
+  segmentF(startX, startY, scale);
   segmentA(startX, startY, scale);
   segmentB(startX, startY, scale);
-  segmentC(startX, startY, scale);
-  segmentF(startX, startY, scale);
   segmentG(startX, startY, scale);
+  //delay here? marker up through segments E and D
+  segmentC(startX, startY, scale);
 }
 
 
