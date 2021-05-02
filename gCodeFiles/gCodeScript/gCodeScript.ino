@@ -103,10 +103,10 @@ void loop() {
 
 void doDemo(){
   
-  digitOne(0, 0, 55);
-  digitTwo(70, 0, 55);
-  digitFive(145, 0, 55);
-  digitNine(220, 0, 55);
+  drawDigit(1, 0, 0, 55);
+  drawDigit(2, 70, 0, 55);
+  drawDigit(5, 145, 0, 55);
+  drawDigit(9, 220, 0, 55);
   markerHome();
 
   /*used to check all gigits are properly formed
@@ -137,7 +137,7 @@ int sendCommand(char* command){
   #endif
 }
 
-void drawDigit(int startX, int startY, int scale, int number){
+void drawDigit(int number, int startX, int startY, int scale){
   switch (number){
     case 0:
       digitZero(startX, startY, scale);
