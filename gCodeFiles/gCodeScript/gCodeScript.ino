@@ -5,7 +5,7 @@
 #define COMMAND_LENGTH 255
 
 //comment for actual device
-#define SIMULATE
+//#define SIMULATE
 
 #define SIMULATE_TIME
 
@@ -26,20 +26,17 @@ void segmentF(int startX, int startY, int scale);
 void segmentG(int startX, int startY, int scale);
 void markerUp();
 void markerDown();
-void toPrintStart(int startX, int startY);
 int reHome();
 void doDemo();
 void markerHome();
 int goToXY(double x, double y);
 int fastToXY(double x, double y);
 int reHome(bool x, bool y);
-/* non used prototypes from previous algorithm
-int leftX(int startX, int scale);
-int rightX(int startX, int scale);
-int topY(int startY, int scale);
-int bottomY(int startY, int scale);
-*/
-void digitForm(int startX, int startY, int scale);
+
+void drawDigit(int startX, int startY, int scale, int number);
+
+
+//void digitForm(int startX, int startY, int scale); //digitForm identical to digitEight
 void digitZero(int startX, int startY, int scale);
 void digitOne(int startX, int startY, int scale);
 void digitTwo(int startX, int startY, int scale);
@@ -106,9 +103,10 @@ void loop() {
 
 void doDemo(){
   
-  digitForm(0, 0, 65);
-  digitForm(100, 0, 65);
-  digitForm(200, 0, 65);
+  digitOne(0, 0, 55);
+  digitTwo(70, 0, 55);
+  digitFive(145, 0, 55);
+  digitNine(220, 0, 55);
   markerHome();
 
   /*used to check all gigits are properly formed
@@ -138,6 +136,46 @@ int sendCommand(char* command){
     #endif
   #endif
 }
+
+void drawDigit(int startX, int startY, int scale, int number){
+  switch (number){
+    case 0:
+      digitZero(startX, startY, scale);
+      break;
+    case 1:
+      digitOne(startX, startY, scale);
+      break;
+    case 2:
+      digitTwo(startX, startY, scale);
+      break;
+    case 3:
+      digitThree(startX, startY, scale);
+      break;
+    case 4:
+      digitFour(startX, startY, scale);
+      break;
+    case 5:
+      digitFive(startX, startY, scale);
+      break;
+    case 6:
+      digitSix(startX, startY, scale);
+      break;
+    case 7:
+      digitSeven(startX, startY, scale);
+      break;
+    case 8:
+      digitEight(startX, startY, scale);
+      break;
+    case 9:
+      digitNine(startX, startY, scale);
+      break;
+    default:
+      printf(";error, invalid number passed to drawDigit");
+  }
+  
+  
+}
+
 
 void digitForm(int startX, int startY, int scale){
   markerUp();
@@ -418,21 +456,6 @@ int fastToXY(double x, double y){
   snprintf(nextCommand,COMMAND_LENGTH, "G0 X%fY%f F15000",x,y);
   return sendCommand(nextCommand);
 }
-
-/* non used  functions from previous algorithm
-int leftX(int startX, int scale){return ((startX + scale));}
-
-int rightX(int startX, int scale){return (0.5 * scale - leftX(startX, scale));}
-
-int topY(int startY, int scale){return ((startY + scale));}
-
-int bottomY(int startY, int scale){return (0.5 * scale - topY(startY, scale));}
-*/
-
-/*void toPrintStart(int startX, int startY){
-  markerUp();
-  printf("G1 X%dY%d", startX, startY);
-}*/
 
 
 #ifdef SIMULATE
