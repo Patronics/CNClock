@@ -226,20 +226,6 @@ void drawDigit(int number, int startX, int startY, int scale){
 }
 
 
-void digitForm(int startX, int startY, int scale){
-  markerUp();
-  fastToXY(startX,startY);
-  delay(500);
-  segmentF(startX, startY, scale);
-  segmentA(startX, startY, scale);
-  segmentB(startX, startY, scale);
-  segmentG(startX, startY, scale);
-  segmentE(startX, startY, scale);
-  segmentD(startX, startY, scale);
-  segmentC(startX, startY, scale);
-}
-
-
 void digitZero(int startX, int startY, int scale){
   markerUp();
   fastToXY(startX,startY);
