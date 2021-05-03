@@ -1,13 +1,17 @@
 #include <iostream>
 #include <stdio.h>
+#include <time.h>
 
-#include <WiFiManager.h>          //https://github.com/tzapu/WiFiManager WiFi Configuration Magic
-
+#ifdef ARDUINO
+  #include <WiFiManager.h>          //https://github.com/tzapu/WiFiManager WiFi Configuration Magic
+#endif
 
 #define COMMAND_LENGTH 255
 
-//comment for actual device
-//#define SIMULATE
+#ifndef ARDUINO
+  //comment for actual device
+  #define SIMULATE
+#endif
 
 #define SIMULATE_TIME
 
@@ -16,7 +20,9 @@
   void delay(int mill);
 #endif
 
-
+#ifdef WiFiManager_h
+  WiFiManager wifiManager;
+#endif
 
 
 void segmentA(int startX, int startY, int scale);
@@ -51,7 +57,6 @@ void digitEight(int startX, int startY, int scale);
 void digitNine(int startX, int startY, int scale);
 
 
-
 void setup() {
   printf(";commands:\n Valid GCode, \n @ to rehome, \n ~ to draw demo\n");
   #ifndef SIMULATE
@@ -72,9 +77,26 @@ void setup() {
       doDemo();
     #endif
   #endif
+
+  #ifdef WiFiManager_h
+    wifiManager.setCleanConnect(true); // disconnect before connect, clean connect
+    wifiManager.setConnectRetries(4);
+    wifiManager.setConfigPortalBlocking(false);
+    if(wifiManager.autoConnect("CNClock", "SierraRobotics")){
+      printf(";connected to network");
+      getTime();
+    } else {
+      printf(";hosting portal, awaiting network connection");
+    }
+  #endif
 }
 
+
 void loop() {
+  #ifdef WiFiManager_h
+    wifiManager.process();
+  #endif
+  
   #ifndef SIMULATE
     if(Serial.available()) {
       int ch = Serial.read();
@@ -123,6 +145,31 @@ void doDemo(){
   digitEight(800, 0l 65);
   digitNine(900, 0, 65);
   */
+}
+
+
+void getTime() {
+  int tz           = -5;
+  int dst          = 0;
+  time_t now       = time(nullptr);
+  unsigned timeout = 5000; // try for timeout
+  unsigned start   = millis();
+  configTime(tz * 3600, dst * 3600, "pool.ntp.org", "time.nist.gov");
+  Serial.print("Waiting for NTP time sync: ");
+  while (now < 8 * 3600 * 2 ) { // what is this ?
+    delay(100);
+    Serial.print(".");
+    now = time(nullptr);
+    if((millis() - start) > timeout){
+      Serial.println("\n[ERROR] Failed to get NTP time.");
+      return;
+    }
+  }
+  Serial.println("");
+  struct tm timeinfo;
+  gmtime_r(&now, &timeinfo); // @NOTE doesnt work in esp2.3.0
+  Serial.print("Current time: ");
+  Serial.print(asctime(&timeinfo));
 }
 
 int sendCommand(char* command){
