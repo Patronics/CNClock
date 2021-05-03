@@ -1,6 +1,8 @@
 #include <iostream>
 #include <stdio.h>
 
+#include <WiFiManager.h>          //https://github.com/tzapu/WiFiManager WiFi Configuration Magic
+
 
 #define COMMAND_LENGTH 255
 
