@@ -149,27 +149,36 @@ void doDemo(){
 
 
 void getTime() {
-  int tz           = -5;
-  int dst          = 0;
-  time_t now       = time(nullptr);
-  unsigned timeout = 5000; // try for timeout
-  unsigned start   = millis();
-  configTime(tz * 3600, dst * 3600, "pool.ntp.org", "time.nist.gov");
-  Serial.print("Waiting for NTP time sync: ");
-  while (now < 8 * 3600 * 2 ) { // what is this ?
-    delay(100);
-    Serial.print(".");
-    now = time(nullptr);
-    if((millis() - start) > timeout){
-      Serial.println("\n[ERROR] Failed to get NTP time.");
-      return;
+  #ifdef WiFiManager_h
+    int tz           = -8;
+    int dst          = 1;
+    time_t now       = time(nullptr);
+    unsigned timeout = 5000; // try for timeout
+    unsigned start   = millis();
+    configTime(tz * 3600, dst * 3600, "pool.ntp.org", "time.nist.gov");
+    Serial.print("Waiting for NTP time sync: ");
+    while (now < 8 * 3600 * 2 ) { // what is this ?
+      delay(100);
+      Serial.print(".");
+      now = time(nullptr);
+      if((millis() - start) > timeout){
+        Serial.println("\n;[ERROR] Failed to get NTP time.");
+        return;
+      }
     }
-  }
-  Serial.println("");
-  struct tm timeinfo;
-  gmtime_r(&now, &timeinfo); // @NOTE doesnt work in esp2.3.0
-  Serial.print("Current time: ");
-  Serial.print(asctime(&timeinfo));
+    Serial.println("");
+    struct tm timeinfo;
+    gmtime_r(&now, &timeinfo); // @NOTE doesnt work in esp2.3.0
+    //Serial.print("Current time: ");
+    int dstShift=0;
+      if(timeinfo.tm_isdst>0){
+        dstShift=1;
+        Serial.printf(";dstShifting");
+      }
+      Serial.printf("time: %d/%d/%d %d:%d:%d",timeinfo.tm_year+1900, timeinfo.tm_mon, timeinfo.tm_mday, timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec);
+  
+    //Serial.print(asctime(&timeinfo));
+  #endif
 }
 
 int sendCommand(char* command){
