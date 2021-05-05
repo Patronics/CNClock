@@ -150,8 +150,8 @@ void doDemo(){
 
 void getTime() {
   #ifdef WiFiManager_h
-    int tz           = -8;
-    int dst          = 1;
+    int tz           = -8;   //seems to be ignored?
+    int dst          = 1;    //seems to be ignored?
     time_t now       = time(nullptr);
     unsigned timeout = 5000; // try for timeout
     unsigned start   = millis();
@@ -168,13 +168,14 @@ void getTime() {
     }
     Serial.println("");
     struct tm timeinfo;
-    gmtime_r(&now, &timeinfo); // @NOTE doesnt work in esp2.3.0
+    //gmtime_r(&now, &timeinfo); // @NOTE doesnt work in esp2.3.0
+    getLocalTime(&timeinfo, 5000); //see https://github.com/espressif/arduino-esp32/blob/master/cores/esp32/esp32-hal-time.c
     //Serial.print("Current time: ");
     int dstShift=0;
-      if(timeinfo.tm_isdst>0){
+      /*if(timeinfo.tm_isdst>0){
         dstShift=1;
         Serial.printf(";dstShifting");
-      }
+      }*/
       Serial.printf("time: %d/%d/%d %d:%d:%d",timeinfo.tm_year+1900, timeinfo.tm_mon, timeinfo.tm_mday, timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec);
   
     //Serial.print(asctime(&timeinfo));
