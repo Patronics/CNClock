@@ -25,24 +25,10 @@
 #endif
 
 
-void segmentA(int startX, int startY, int scale);
-void segmentB(int startX, int startY, int scale);
-void segmentC(int startX, int startY, int scale);
-void segmentD(int startX, int startY, int scale);
-void segmentE(int startX, int startY, int scale);
-void segmentF(int startX, int startY, int scale);
-void segmentG(int startX, int startY, int scale);
-void markerUp();
-void markerDown();
-int reHome();
-void doDemo();
-void markerHome();
-int goToXY(double x, double y);
-int fastToXY(double x, double y);
-int reHome(bool x, bool y);
-
+//function declarations
+void drawTime(int hrs, int mins, int baseline);
+struct tm getTime();
 void drawDigit(int startX, int startY, int scale, int number);
-
 
 //void digitForm(int startX, int startY, int scale); //digitForm identical to digitEight
 void digitZero(int startX, int startY, int scale);
@@ -56,8 +42,27 @@ void digitSeven(int startX, int startY, int scale);
 void digitEight(int startX, int startY, int scale);
 void digitNine(int startX, int startY, int scale);
 
+void dividingColon(int startX, int startY, int scale);
 
+void segmentA(int startX, int startY, int scale);
+void segmentB(int startX, int startY, int scale);
+void segmentC(int startX, int startY, int scale);
+void segmentD(int startX, int startY, int scale);
+void segmentE(int startX, int startY, int scale);
+void segmentF(int startX, int startY, int scale);
+void segmentG(int startX, int startY, int scale);
 
+void markerUp();
+void markerDown();
+int reHome();
+void doDemo();
+void markerHome();
+int goToXY(double x, double y);
+int fastToXY(double x, double y);
+int reHome(bool x, bool y);
+
+//globals
+bool isHomed=false;
 
 void setup() {
   printf(";commands:\n Valid GCode, \n @ to rehome, \n ~ to draw demo\n");
@@ -103,7 +108,11 @@ void loop() {
     if(Serial.available()) {
       int ch = Serial.read();
       if (ch == '~'){
-        doDemo();
+        if(isHomed){
+          doDemo();
+        }else{
+          printf("; error, requested draw before homing\n; please rehome with @ first\n");
+        }
       }
       else if (ch == '@'){
         reHome();
@@ -154,8 +163,9 @@ void drawTime(int hrs, int mins, int baseline){
   hrs=hrs%12;   //convert 24 hour time to 12 hour time
   drawDigit((hrs/10)%10, 0, baseline, 55);    // 10s place of hours
   drawDigit(hrs%10, 70, baseline, 55);        // 1s place of hours
-  drawDigit((mins/10)%10, 145, baseline, 55); // 10s place of mins
-  drawDigit(mins%10, 220, baseline, 55);      //1s place of mins
+  dividingColon(110, baseline, 55);
+  drawDigit((mins/10)%10, 150, baseline, 55); // 10s place of mins
+  drawDigit(mins%10, 225, baseline, 55);      //1s place of mins
 }
 
 
@@ -267,23 +277,6 @@ void digitZero(int startX, int startY, int scale){
   segmentD(startX, startY, scale);
   segmentC(startX, startY, scale);
  
-  
-  /* previous implimentation of digit zero
-  int ms = 1;
-  delay(ms);
-  segmentA(startX, startY, scale);
-  delay(ms);
-  segmentB(startX, startY, scale);
-  delay(ms);
-  segmentC(startX, startY, scale);
-  delay(ms);
-  segmentD(startX, startY, scale);
-  delay(ms);
-  segmentE(startX, startY, scale);
-  delay(ms);
-  segmentF(startX, startY, scale);
-  delay(ms);
-  */
 }
 
 void digitOne(int startX, int startY, int scale){
@@ -392,6 +385,19 @@ void digitNine(int startX, int startY, int scale){
 }
 
 
+void dividingColon(int startX, int startY, int scale){
+  markerUp();
+  fastToXY(startX+scale/2,startY+scale+scale/2);
+  markerDown();
+  sendCommand("G3 I0 J4");
+  markerUp();
+  fastToXY(startX+scale/2,startY+scale/2);
+  markerDown();
+  sendCommand("G2 I0 J4");
+  markerUp();
+}
+
+
 void segmentA(int startX, int startY, int scale){
   markerUp();
   //(x + space, y + 2 * scale)
@@ -493,6 +499,7 @@ void markerDown(){
 }
 
 int reHome(bool x, bool y){
+  isHomed=true;
   markerHome();
   char xChar = ' ';
   if (x){xChar='X';}
