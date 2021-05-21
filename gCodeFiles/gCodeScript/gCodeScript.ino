@@ -57,6 +57,8 @@ void digitEight(int startX, int startY, int scale);
 void digitNine(int startX, int startY, int scale);
 
 
+
+
 void setup() {
   printf(";commands:\n Valid GCode, \n @ to rehome, \n ~ to draw demo\n");
   #ifndef SIMULATE
@@ -126,14 +128,15 @@ void loop() {
 }
 
 void doDemo(){
-  
-  drawDigit(1, 0, 0, 55);
-  drawDigit(2, 70, 0, 55);
-  drawDigit(5, 145, 0, 55);
-  drawDigit(9, 220, 0, 55);
+  struct tm curTime=getTime();
+  drawTime(curTime.tm_hour, curTime.tm_min, 20);
+  //drawDigit(1, 0, 0, 55);
+  //drawDigit(2, 70, 0, 55);
+  //drawDigit(5, 145, 0, 55);
+  //drawDigit(9, 220, 0, 55);
   markerHome();
 
-  /*used to check all gigits are properly formed
+  /*used to check all digits are properly formed
   digitZero(0, 0, 65);
   digitOne(100, 0, 65);
   digitTwo(200, 0, 65);
@@ -147,8 +150,16 @@ void doDemo(){
   */
 }
 
+void drawTime(int hrs, int mins, int baseline){
+  hrs=hrs%12;   //convert 24 hour time to 12 hour time
+  drawDigit((hrs/10)%10, 0, baseline, 55);    // 10s place of hours
+  drawDigit(hrs%10, 70, baseline, 55);        // 1s place of hours
+  drawDigit((mins/10)%10, 145, baseline, 55); // 10s place of mins
+  drawDigit(mins%10, 220, baseline, 55);      //1s place of mins
+}
 
-void getTime() {
+
+struct tm getTime() {
   #ifdef WiFiManager_h
     int tz           = -8;   //seems to be ignored?
     int dst          = 1;    //seems to be ignored?
@@ -163,7 +174,9 @@ void getTime() {
       now = time(nullptr);
       if((millis() - start) > timeout){
         Serial.println("\n;[ERROR] Failed to get NTP time.");
-        return;
+        struct tm nulltimeinfo;
+        nulltimeinfo = {}; //intialize all members to zero
+        return nulltimeinfo;
       }
     }
     Serial.println("");
@@ -176,9 +189,15 @@ void getTime() {
         dstShift=1;
         Serial.printf(";dstShifting");
       }*/
+      
       Serial.printf("time: %d/%d/%d %d:%d:%d",timeinfo.tm_year+1900, timeinfo.tm_mon, timeinfo.tm_mday, timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec);
   
     //Serial.print(asctime(&timeinfo));
+    return timeinfo;
+  #else //if wifimanager not available
+        struct tm nulltimeinfo;
+        nulltimeinfo = {}; //intialize all members to zero
+        return nulltimeinfo; //default to 00:00;
   #endif
 }
 
@@ -451,7 +470,7 @@ void markerUp(){
   #ifdef SIMULATE
     sendCommand("G1 Z50");
   #else
-    sendCommand("M280 P0 S85");
+    sendCommand("M280 P0 S110");
   #endif
 }
 
@@ -469,7 +488,7 @@ void markerDown(){
   #ifdef SIMULATE
     sendCommand("G1 Z0");
   #else
-    sendCommand("M280 P0 S74");
+    sendCommand("M280 P0 S83");
   #endif
 }
 
