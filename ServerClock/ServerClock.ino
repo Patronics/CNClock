@@ -107,6 +107,8 @@ void drawNow();
 void rest();
 void wifiLoop();
 
+//bool isStarted = false;
+
 struct tm currentTime;
 struct tm lastUpdate;
 
@@ -129,7 +131,7 @@ WiFiServer server(80);
 
 void setup() {
   Serial.begin(115200);
-  Serial1.begin(115200, SERIAL_8N1, 36, 32);  
+  Serial1.begin(115200);//, SERIAL_8N1, 36, 32);  
 
   Serial.print("Connecting to ");
   Serial.println(ssid);
@@ -159,7 +161,13 @@ void setup() {
 void loop() {
   delay(500);
   wifiLoop();
-  
+  serialLoop();
+
+    currTime = millis();
+      if(start){
+        clockLoop();
+        Serial.println("checking for update");
+      }
 }
 
 void wifiLoop(){
@@ -285,6 +293,28 @@ void wifiLoop(){
   client.stop();
   Serial.println("Client disconnected");
   Serial.println("");
+}
+
+void serialLoop(){
+  if(Serial.available()){
+    int ch = Serial.read();
+    if(ch == 'u'){
+      currentTime = getTime();
+      updateTime(currentTime, lastUpdate);
+    }
+    else if(ch == 's'){
+      start=true;
+    }
+    else if(ch == 'e'){
+      eraseAll();
+    }
+    else if(ch == 'n'){
+      drawNow();
+    }
+    else if(ch == 'h'){
+      rest();
+    }
+  }
 }
 
 void controlledSerial(){
