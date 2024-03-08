@@ -7,6 +7,7 @@
 #include <iostream>
 #include <stdio.h>
 #include "time.h"
+#include "networkCreds.h"
 #include <cmath>
 #include <LiquidCrystal.h>
 
@@ -141,8 +142,9 @@ void calibrationLoop();
 //////////////////////////////
 
 // Network Configuration
-const char* ssid     = ""; //replace with sierra college ssid;
-const char* password = ""; //psswd is student login for canvas
+// adjust these values in networkCreds.h
+const char* ssid     = WIFI_SSID; //replace with chosen wifi network;
+const char* password = WIFI_PASS; //wifi psswd
 const char* ntpServer = "pool.ntp.org";
 
 // Time Configuration
@@ -181,7 +183,7 @@ int updateInterval = 5; // update the clock every five minutes, default
 String Mode = "Off";
 
 // Starts the lcd using the liquid crystal library
-LiquidCrystal lcd(19, 4, 18, 17, 16, 5);
+LiquidCrystal lcd(19, 4, 18, 17, 16, 5); //rs, enable, d4,d5,d6,d7
 
 
 // Starts the Wifi Server
@@ -210,14 +212,14 @@ void setup() {
   //Serial1.begin(115200, SERIAL_8N1, 36, 32);  // indicates Rx on pin 36, Tx on pin 32
 
   //LCD Setup, (columns and rows), and prints the current time
-  lcd.begin(16, 2);
+  lcd.begin(24, 2);
   
   Serial.print("Connecting to ");
   Serial.println(ssid);
   WiFi.begin(ssid, password);
   int counter = 0;
   while (WiFi.status() != WL_CONNECTED) {
-    delay(2500);
+    delay(1000);
     Serial.println(".");
     
     lcd.setCursor(0,0);
@@ -229,6 +231,8 @@ void setup() {
     counter += 1;
   }
   lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print("Wific Connected");
   Serial.println("");
   Serial.println("WiFi connected.");
 
@@ -300,7 +304,7 @@ void controlledSerial(){
 
 /*
  * 
- *    16x2 display
+ *    24x2 display
  *                  *1 - button to rasie time interval
  *      Time: 00:00 upIn   16/16 chars 
  *      Mode: _____ 00mn   16/16 chars
