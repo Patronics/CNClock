@@ -95,7 +95,7 @@ const int colonOffset = 350;
 
 //offset for eraser to cover same ground as marker, in mm
 const int eraserX = 10;
-const int eraserY = 57;
+const int eraserY = -57;
 
 
 /////////////////////////
@@ -309,7 +309,7 @@ void controlledSerial(){
     int ch = Serial.read();
     if(ch == 'y'){
       currentTime = getTime();
-      updateTime(currentTime, lastUpdate);
+      updateTime();
     }
   }
 }
@@ -435,17 +435,18 @@ void eraseAll(){
 // Check if needs to draw out the current time, 
 //  and does so if more than set update interval 
 //  has passed when called, erase if needed
-void updateTime(tm currentTime, tm lastUpdate){
+//uses globals tm currentTime, tm lastUpdate
+void updateTime(){
   reHome();
   
 
   if(!lastUpdate.tm_hour){
-    drawTime(currentTime.tm_hour, currentTime.tm_min, false);
+    drawTime(currentTime.tm_hour, currentTime.tm_min, false);  //testing with eraser mode
     lastUpdate = currentTime;
   }
   else{
       int checkTime = lastUpdate.tm_min;
-      if(currentTime.tm_min == 0){
+      if(currentTime.tm_min == 0){  //new hour started
         checkTime = currentTime.tm_min;
       }
       if((currentTime.tm_min - checkTime) > updateInterval){ 
@@ -570,7 +571,7 @@ void onLoop(){
     else if(downMode == LOW){
       downController();
     }
-    updateTime(currentTime, lastUpdate);
+    updateTime();
   }
   return;
 }
@@ -727,7 +728,7 @@ void calibrationLoop(){
   while(offMode == HIGH){
     onMode = digitalRead(onButton);
     pauseMode = digitalRead(pauseButton);
-    offMode = digitalRead(offButton);    
+    offMode = digitalRead(offButton);
   }
   lcd.clear();
   displayController();
@@ -842,14 +843,15 @@ void rest(){
 // Puts the eraser down, ready to erase
 void eraserDown(){
   printf(";eraserDown\n");
-  sendCommand("M280 P0 S15"); //this is a guess, needs to be changed when eraser is put on
+  sendCommand("M280 P0 S12"); //this is a guess, needs to be changed when eraser is put on
 }
 
 // Raises the Marker
 void markerHome(){
   movementWait();
   printf(";markerRaised\n");
-  sendCommand("M280 P0 S40");
+  sendCommand("M280 P0 S30");    //cap-clearance homing height
+  //sendCommand("M280 P0 S40");  //normal homing height
   movementWait();
 }
 
@@ -1040,7 +1042,7 @@ void digitNine(int digit, bool erase){
 }
 
 void movementWait(){
-  delay(500);
+  delay(100);
 }
 
 // Patterns for the Segments a-g, and colon
@@ -1065,7 +1067,7 @@ void dividingColon(int digit, bool erase){
   movementWait();
   //now at start of top one
   sendCommand("G3 I0 J10 F1500");
-  delay(1500);
+  delay(2000);
   movementWait();
   markerHome();
   movementWait();
@@ -1077,7 +1079,7 @@ void dividingColon(int digit, bool erase){
   movementWait();
   //now at start of bottom one
   sendCommand("G2 I0 J10 F1000"); // 3000 seems too fast, only does like half, 1500 does 3/4
-  delay(1500);
+  delay(2000);
   movementWait();
   markerHome();
   movementWait();
