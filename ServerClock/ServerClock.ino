@@ -1,4 +1,17 @@
+/*
+ServerClock.ino
+Patrick Leiser, John Schneider
+2021-2024
 
+
+
+Use with the "Heltec WiFi Lora 32" board in arduino ide
+NOT Wifi Lora 32 V2 or V3
+
+Programming process:
+Disconnect control box I/O cable, then program over USB, then reconnect I/O cable
+
+*/
 ///////////////
 // Libraries //
 ///////////////
@@ -114,7 +127,7 @@ void segmentF(int digit, bool erase);
 void segmentG(int digit, bool erase);
 
 void markerHome();
-void markerDown();
+void markerWrite();
 void eraseDown();
 void capMarker();
 void reHome();
@@ -136,6 +149,7 @@ void timeUpdateController();
 void modeUpdateController();
 void updateTimeInterval();
 void calibrationLoop();
+void movementWait();
 
 //////////////////////////////
 // Constants and Structures //
@@ -232,7 +246,7 @@ void setup() {
   }
   lcd.clear();
   lcd.setCursor(0,0);
-  lcd.print("Wific Connected");
+  lcd.print("Wifi Connected");
   Serial.println("");
   Serial.println("WiFi connected.");
 
@@ -471,8 +485,11 @@ tm getTime(){
 
 // Main control to draw out time
 void drawTime(int hrs, int mins, bool erase){
+  markerCapHome();
   hrs=hrs%12;   //convert 24 hour time to 12 hour time
-  drawDigit((hrs/10)%10, digitOneOffset, erase);    // 10s place of hours // unsure if this is correct ****************
+  if(hrs>=10){
+    drawDigit((hrs/10)%10, digitOneOffset, erase);    // 10s place of hours // unsure if this is correct ****************
+  }
   drawDigit(hrs%10, digitTwoOffset, erase);        // 1s place of hours
   dividingColon(colonOffset, erase);
   drawDigit((mins/10)%10, digitThreeOffset, erase); // 10s place of mins
@@ -825,27 +842,38 @@ void rest(){
 // Puts the eraser down, ready to erase
 void eraserDown(){
   printf(";eraserDown\n");
-  sendCommand("M280 P0 S10"); //this is a guess, needs to be changed when eraser is put on
+  sendCommand("M280 P0 S15"); //this is a guess, needs to be changed when eraser is put on
 }
 
 // Raises the Marker
 void markerHome(){
+  movementWait();
   printf(";markerRaised\n");
   sendCommand("M280 P0 S40");
+  movementWait();
 }
 
 // Brings the Marker to (1, 4)
 void capMarker(){
+  markerCapHome();
   printf(";capMarker\n");
   sendCommand("G0 X1 Y4");
   markerCap();
  
 }
 
+// Raises the Marker extra high for capping
+void markerCapHome(){
+  printf(";markerRaised\n");
+  sendCommand("M280 P0 S30");
+}
+
 // Lowers to the marker, ready to write
 void markerWrite(){
+  movementWait();
   printf(";markerWrite\n");
-  sendCommand("M280 P0 S135");
+  sendCommand("M280 P0 S129");
+  movementWait();
 }
 
 // Lowers the Marker enough to cap it, sends rest command to motors
@@ -863,7 +891,7 @@ void reHome(){
 // Sets isHome to true, rehomes x, then y axis, waits for finished before any new commands "M400"
 void reHome(bool x, bool y){
   isHomed=true;
-  markerHome();
+  markerCapHome();
   char xChar = ' ';
   if (x){xChar='X';}
   char yChar = ' ';
@@ -872,6 +900,7 @@ void reHome(bool x, bool y){
   snprintf(nextCommand,COMMAND_LENGTH, "G28 %c%c",xChar,yChar);
   sendCommand(nextCommand); 
   sendCommand("M400");
+  //goToXY(200,200);
 }
 
 // Accepts (x,y) coordinate, travels straight to location
@@ -1010,6 +1039,10 @@ void digitNine(int digit, bool erase){
   segmentB(digit, erase);
 }
 
+void movementWait(){
+  delay(500);
+}
+
 // Patterns for the Segments a-g, and colon
 // *** MAKE SURE MARKER IS UP BEFORE CALLING ***
 void dividingColon(int digit, bool erase){
@@ -1026,24 +1059,28 @@ void dividingColon(int digit, bool erase){
   }
   else{
     goToXY(X, Y);
+    movementWait();
     markerWrite();
   }
-
+  movementWait();
   //now at start of top one
   sendCommand("G3 I0 J10 F1500");
-  
+  delay(1500);
+  movementWait();
   markerHome();
-
+  movementWait();
   Y -= 100;
   goToXY(X, Y);
-  
+  movementWait();
   if(erase){eraserDown();}
   else{markerWrite();}
-  
+  movementWait();
   //now at start of bottom one
-  sendCommand("G2 I0 J10 F1000"); // 3000 seems to fast, only does like half, 1500 does 3/4
-
+  sendCommand("G2 I0 J10 F1000"); // 3000 seems too fast, only does like half, 1500 does 3/4
+  delay(1500);
+  movementWait();
   markerHome();
+  movementWait();
 }
 
 void segmentA(int digit, bool erase){
