@@ -94,7 +94,7 @@ const int digitFourOffset = 550;
 const int colonOffset = 350;
 
 //offset for eraser to cover same ground as marker, in mm
-const int eraserX = 10;
+const int eraserX = -10;
 const int eraserY = -57;
 
 
@@ -193,7 +193,7 @@ bool offState = false;
 bool onState = false;
 bool pauseState = false;
 
-int updateInterval = 5; // update the clock every five minutes, default
+int updateInterval = 1; // update the clock every five minutes, default
 String Mode = "Off";
 
 // Starts the lcd using the liquid crystal library
@@ -487,7 +487,12 @@ tm getTime(){
 // Main control to draw out time
 void drawTime(int hrs, int mins, bool erase){
   markerCapHome();
+  goToXY(15,10);
+  delay(1000);
   hrs=hrs%12;   //convert 24 hour time to 12 hour time
+  if(hrs == 0){
+    hrs = 12;
+  }
   if(hrs>=10){
     drawDigit((hrs/10)%10, digitOneOffset, erase);    // 10s place of hours // unsure if this is correct ****************
   }
@@ -827,7 +832,7 @@ void sendCommand(char* command){
     Serial.print("\n");
     Serial1.print(command);
     Serial1.print("\n");
-    delay(500);
+    delay(300);
 }
 
 ////////////////////////////////
@@ -843,15 +848,15 @@ void rest(){
 // Puts the eraser down, ready to erase
 void eraserDown(){
   printf(";eraserDown\n");
-  sendCommand("M280 P0 S12"); //this is a guess, needs to be changed when eraser is put on
+  sendCommand("M280 P0 S9");
 }
 
 // Raises the Marker
 void markerHome(){
   movementWait();
   printf(";markerRaised\n");
-  sendCommand("M280 P0 S30");    //cap-clearance homing height
-  //sendCommand("M280 P0 S40");  //normal homing height
+  //sendCommand("M280 P0 S30");    //cap-clearance homing height
+  sendCommand("M280 P0 S50");  //normal homing height
   movementWait();
 }
 
@@ -860,6 +865,7 @@ void capMarker(){
   markerCapHome();
   printf(";capMarker\n");
   sendCommand("G0 X1 Y4");
+  movementWait();
   markerCap();
  
 }
@@ -872,7 +878,6 @@ void markerCapHome(){
 
 // Lowers to the marker, ready to write
 void markerWrite(){
-  movementWait();
   printf(";markerWrite\n");
   sendCommand("M280 P0 S129");
   movementWait();
@@ -901,21 +906,22 @@ void reHome(bool x, bool y){
   char nextCommand[COMMAND_LENGTH];
   snprintf(nextCommand,COMMAND_LENGTH, "G28 %c%c",xChar,yChar);
   sendCommand(nextCommand); 
-  sendCommand("M400");
+  movementWait();
+  delay(15000);  //TODO: Replace with checking the response to M119 to remove unneeded waits
   //goToXY(200,200);
 }
 
 // Accepts (x,y) coordinate, travels straight to location
 void goToXY(double x, double y){
   char nextCommand[COMMAND_LENGTH];
-  snprintf(nextCommand,COMMAND_LENGTH, "G1 X%fY%f F6000",x,y); 
+  snprintf(nextCommand,COMMAND_LENGTH, "G1 X%fY%f F10000",x,y); 
   // F10000, 8000 12 well, colon half way and fails on 3 default speed, try to mess around with to fix hardware inconsistentcies
   // 12000 to fast, works, but seems to lose itself at the end, accuracy wise, but no stalls
   // 6000 seems to work rather well
   // setting max acceleration, hoepfully to keep far cradle from getting stuck
   //sendCommand("M201");
   sendCommand(nextCommand);
-  sendCommand("M400");
+  movementWait();
   //delay(2000);
 }
 
@@ -925,6 +931,10 @@ void goToXY(double x, double y){
 ///////////////////////////////////////
 
 void drawDigit(int number, int digit, int erase){
+  Serial.print("drawing");
+  Serial.print(number);
+  Serial.print("at");
+  Serial.println(digit);
   switch (number){
     case 0:
       digitZero(digit, erase);
@@ -1042,6 +1052,7 @@ void digitNine(int digit, bool erase){
 }
 
 void movementWait(){
+  sendCommand("M400"); //M400:  Finish Moves
   delay(100);
 }
 
@@ -1066,8 +1077,8 @@ void dividingColon(int digit, bool erase){
   }
   movementWait();
   //now at start of top one
-  sendCommand("G3 I0 J10 F1500");
-  delay(2000);
+  sendCommand("G3 I0 J10 F3000");
+  //delay(2000);
   movementWait();
   markerHome();
   movementWait();
@@ -1078,8 +1089,8 @@ void dividingColon(int digit, bool erase){
   else{markerWrite();}
   movementWait();
   //now at start of bottom one
-  sendCommand("G2 I0 J10 F1000"); // 3000 seems too fast, only does like half, 1500 does 3/4
-  delay(2000);
+  sendCommand("G2 I0 J10 F3000");
+  //delay(2000);
   movementWait();
   markerHome();
   movementWait();
@@ -1245,131 +1256,3 @@ void segmentG(int digit, bool erase){
   
   markerHome();
 }
-
-// old, not using wifi server to control
-/*
-void wifiLoop(){
-  WiFiClient client = server.available();
-
-  if(client){
-    String currentLine = "";
-    while(client.connected()){
-      currTime = millis();
-      if(start == true){
-        clockLoop();
-        Serial.println("checking for update");
-      }
-      if(client.available()){
-        char c = client.read();
-        Serial.write(c);
-        header += c;
-        if(c == '\n'){
-          if(currentLine.length() == 0){
-            client.println("HTTP/1.1 200 OK");
-            client.println("Content-type:text/html");
-            client.println("Connection: close");
-            client.println();
-
-            if(header.indexOf("GET /updateInterval/2") >= 0){
-              Serial.println("update interval: 2 minutes");
-              updateInterval = 2;
-            }
-            else if(header.indexOf("GET /updateInterval/5") >= 0){
-              Serial.println("update interval: 5 minutes");
-              updateInterval = 5;
-            }
-            else if(header.indexOf("GET /updateInterval/10") >= 0){
-              Serial.println("update interval: 10 minutes");
-              updateInterval = 10;
-            }
-            else if(header.indexOf("GET /updateInterval/20") >= 0){
-              Serial.println("update interval: 20 minutes");
-              updateInterval = 20;
-            }
-            else if(header.indexOf("GET /start") >= 0){
-              Serial.println("starting the clock");
-              start = true;
-            }
-            else if(header.indexOf("GET /erase") >= 0){
-              Serial.println("eraseing the clock");
-              eraseAll();
-            }
-            else if(header.indexOf("GET /now") >= 0){
-              Serial.println("drawing current time");
-              drawNow();
-            }
-            else if(header.indexOf("GET /stop") >= 0){
-              Serial.println("stopping the clock");
-              rest();
-            }
-          
-
-            client.println("<!DOCTYPE html><html>");
-            client.println("<head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">");
-            client.println("<link rel=\"icon\" href=\"data:,\">");
-  
-            client.println("<style>html { font-family: Helvetica; display: inline-block; margin: 0px auto; text-align: center;}");
-            client.println(".button { background-color: #4CAF50; border: none; color: white; padding: 16px 40px;");
-            client.println("text-decoration: none; font-size: 30px; margin: 2px; cursor: pointer;}");
-            client.println(".button2 {background-color: #555555;}</style></head>");
-  
-            client.println("<body><h1> CNC Clock Controller</h1>");
-  
-            client.println("<p><a href=\"/start\"><button class=\"button button2\">start clock</button></a></p>");
-            client.println("<p><a href=\"/erase\"><button class=\"button button2\">erase clock</button></a></p>");
-            client.println("<p><a href=\"/now\"><button class=\"button button2\">draw time</button></a></p>");
-            client.println("<p><a href=\"/stop\"><button class=\"button button2\">stop now</button></a></p>");
-  
-            switch(updateInterval){
-              case 2:
-                client.println("<p><a href=\"/updateInterval/2\"><button class=\"button\">2 Minute</button></a></p>");
-                client.println("<p><a href=\"/updateInterval/5\"><button class=\"button button2\">5 Minute</button></a></p>");
-                client.println("<p><a href=\"/updateInterval/10\"><button class=\"button button2\">10 Minute</button></a></p>");
-                client.println("<p><a href=\"/updateInterval/20\"><button class=\"button button2\">20 Minute</button></a></p>");
-                break;
-  
-              case 5:
-                client.println("<p><a href=\"/updateInterval/2\"><button class=\"button button2\">2 Minute</button></a></p>");
-                client.println("<p><a href=\"/updateInterval/5\"><button class=\"button\">5 Minute</button></a></p>");
-                client.println("<p><a href=\"/updateInterval/10\"><button class=\"button button2\">10 Minute</button></a></p>");
-                client.println("<p><a href=\"/updateInterval/20\"><button class=\"button button2\">20 Minute</button></a></p>");
-                break;
-  
-              case 10:
-                client.println("<p><a href=\"/updateInterval/2\"><button class=\"button button2\">2 Minute</button></a></p>");
-                client.println("<p><a href=\"/updateInterval/5\"><button class=\"button button2\">5 Minute</button></a></p>");
-                client.println("<p><a href=\"/updateInterval/10\"><button class=\"button\">10 Minute</button></a></p>");
-                client.println("<p><a href=\"/updateInterval/20\"><button class=\"button button2\">20 Minute</button></a></p>");
-                break;
-  
-              case 20:
-                client.println("<p><a href=\"/updateInterval/2\"><button class=\"button button2\">2 Minute</button></a></p>");
-                client.println("<p><a href=\"/updateInterval/5\"><button class=\"button button2\">5 Minute</button></a></p>");
-                client.println("<p><a href=\"/updateInterval/10\"><button class=\"button button2\">10 Minute</button></a></p>");
-                client.println("<p><a href=\"/updateInterval/20\"><button class=\"button\">20 Minute</button></a></p>");
-                break;
-  
-              default:
-                client.println("<p><a href=\"/updateInterval/2\"><button class=\"button button2\">2 Minute</button></a></p>");
-                client.println("<p><a href=\"/updateInterval/5\"><button class=\"button button2\">5 Minute</button></a></p>");
-                client.println("<p><a href=\"/updateInterval/10\"><button class=\"button button2\">10 Minute</button></a></p>");
-                client.println("<p><a href=\"/updateInterval/20\"><button class=\"button button2\">20 Minute</button></a></p>");
-                break;
-              }
-            }
-            else{
-              currentLine = "";
-            }
-          }
-          else if(c != '\r'){
-            currentLine += c;
-          }  
-      }
-    }
-  }
-  header = "";
-  client.stop();
-  Serial.println("Client disconnected");
-  Serial.println("");
-}
-*/
