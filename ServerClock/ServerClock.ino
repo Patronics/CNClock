@@ -66,32 +66,32 @@ Disconnect control box I/O cable, then program over USB, then reconnect I/O cabl
 //coordinates assume bottom left is 0, once homed
 //segments starting y, top to bottom, in mm
 const int aY = 350;
-const int bY = 335;
+const int bY = 340;
 const int cY = 200;
-const int dY = 50;
+const int dY = 70;
 const int eY = 200;
-const int fY = 335;
-const int gY = 200;
+const int fY = 340;
+const int gY = 210;
 
 //segements starting x. left to right, in mm
-const int aX = 20;
-const int bX = 120;
-const int cX = 120;
-const int dX = 20;
+const int aX = 10;
+const int bX = 130;
+const int cX = 130;
+const int dX = 10;
 const int eX = 0;
 const int fX = 0;
-const int gX = 20;
+const int gX = 10;
 
 //segment lengths, short are a, d, g and long are b, c, e, f, in mm
-const int shortLength = 100;
+const int shortLength = 110;
 const int longLength = 120; 
 
 //offsets for the different digits, 1 2 : 3 4, in mm
-const int digitOneOffset = 50;
-const int digitTwoOffset = 200;
-const int digitThreeOffset = 400;
-const int digitFourOffset = 550;
-const int colonOffset = 350;
+const int digitOneOffset = -50;
+const int digitTwoOffset = 130;
+const int digitThreeOffset = 340;
+const int digitFourOffset = 500;
+const int colonOffset = 300;
 
 //offset for eraser to cover same ground as marker, in mm
 const int eraserX = -10;
@@ -212,6 +212,8 @@ WiFiServer server(80); // uneeded, unless using wifi server controller
  */
 
 int i = 0;
+
+char newCommandBuf[COMMAND_LENGTH+1];  //for use with the string version of sendCommand
  
 void setup() {
 
@@ -222,7 +224,7 @@ void setup() {
   pinMode(pauseButton, INPUT_PULLUP);
 
   Serial.begin(115200);
-  Serial1.begin(115200, SERIAL_8N1, RX, TX);  // indicates Rx on pin 36, Tx on pin 32, rx white, tx yellow
+  //Serial1.begin(115200, SERIAL_8N1, RX, TX);  // indicates Rx on pin 36, Tx on pin 32, rx white, tx yellow
   //Serial1.begin(115200, SERIAL_8N1, 36, 32);  // indicates Rx on pin 36, Tx on pin 32
 
   //LCD Setup, (columns and rows), and prints the current time
@@ -286,9 +288,9 @@ void loop(){
   //test();
   offState = true;
   displayController();
-  mainLoop();
-  lcd.clear();
-  delay(1000);
+  mainLoop(); //this part loops indefinitely
+  //lcd.clear();
+ // delay(1000);
   
   
 }
@@ -451,6 +453,9 @@ void updateTime(){
       }
       if((currentTime.tm_min - checkTime) > updateInterval){ 
       drawTime(lastUpdate.tm_hour, lastUpdate.tm_min, true);
+      reHome();
+      //currentTime = getTime();
+      timeUpdateController();
       drawTime(currentTime.tm_hour, currentTime.tm_min, false);
       lastUpdate = currentTime;
       // perhaps more time, until the update is finished
@@ -523,7 +528,7 @@ void offLoop() {
   
   modeUpdateController();
   while(onState == false){
-    delay(1000);
+    delay(100);
     timeUpdateController();
     onMode = digitalRead(onButton);
     offMode = digitalRead(offButton);
@@ -589,7 +594,7 @@ void pauseLoop(){
 
   modeUpdateController();
   while(pauseState == true){
-    delay(1000);
+    delay(100);
     timeUpdateController();
     onMode = digitalRead(onButton);
     pauseMode = digitalRead(pauseButton);
@@ -827,11 +832,18 @@ void modeUpdateController(){
 }
 
 // Sending command to both the serial moniter and BTT SKR
+
+void sendCommand(String command){
+
+  command.toCharArray(newCommandBuf, COMMAND_LENGTH+1);
+  sendCommand(newCommandBuf);
+}
+
 void sendCommand(char* command){
     Serial.print(command);
     Serial.print("\n");
-    Serial1.print(command);
-    Serial1.print("\n");
+    //Serial1.print(command);
+    //Serial1.print("\n");
     delay(300);
 }
 
@@ -883,6 +895,16 @@ void markerWrite(){
   movementWait();
 }
 
+// Lowers to the marker, ready to write
+void markerWrite(int offset){
+  printf(";markerWrite\n");
+  offset = offset + 129;
+  String writeCommand = "M280 P0 S" + offset;
+  sendCommand(writeCommand);
+  //sendCommand("M280 P0 S129");
+  movementWait();
+}
+
 // Lowers the Marker enough to cap it, sends rest command to motors
 void markerCap(){
   printf(";markerCap\n");
@@ -895,6 +917,12 @@ void reHome(){
   reHome(true, true);
 }
 
+void serialFlush(){
+  while(Serial.available() > 0) {
+    char t = Serial.read();
+  }
+}
+
 // Sets isHome to true, rehomes x, then y axis, waits for finished before any new commands "M400"
 void reHome(bool x, bool y){
   isHomed=true;
@@ -905,10 +933,33 @@ void reHome(bool x, bool y){
   if (y){yChar='Y';}
   char nextCommand[COMMAND_LENGTH];
   snprintf(nextCommand,COMMAND_LENGTH, "G28 %c%c",xChar,yChar);
+  delay(500);
+  serialFlush();
   sendCommand(nextCommand); 
   movementWait();
-  delay(15000);  //TODO: Replace with checking the response to M119 to remove unneeded waits
+  waitForOk(30);
+  delay(500);
+  //delay(15000);  //TODO: Replace with checking the response to M119 to remove unneeded waits
   //goToXY(200,200);
+}
+
+bool waitForOk(int maxWaitDelaySeconds){
+  lcd.setCursor(12,1);
+  lcd.print("Homing");
+  for(int i=0; i<maxWaitDelaySeconds; i++){
+    bool status = Serial.find("ok");
+    if(status){
+      lcd.setCursor(12,1);
+      lcd.print("Home.  ");
+      return true;
+    }
+  }
+  lcd.setCursor(12,1);
+  lcd.print("Home Failed");
+  return(false);
+  //Serial.setTimeout(maxHomeDelay);
+  
+
 }
 
 // Accepts (x,y) coordinate, travels straight to location
