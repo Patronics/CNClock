@@ -194,6 +194,7 @@ bool onState = false;
 bool pauseState = false;
 
 int updateInterval = 3; // update the clock every three minutes, default
+int offsetMinutes = 2;
 String Mode = "Off";
 
 // Starts the lcd using the liquid crystal library
@@ -439,11 +440,12 @@ void eraseAll(){
 //  has passed when called, erase if needed
 //uses globals tm currentTime, tm lastUpdate
 void updateTime(){
-  
+
 
   if(!lastUpdate.tm_hour){
     reHome();
-    drawTime(currentTime.tm_hour, currentTime.tm_min, false);  //testing with eraser mode
+    tm offsetTime = addMinutes(currentTime);
+    drawTime(offsetTime.tm_hour, offsetTime.tm_min, false);
     lastUpdate = currentTime;
     reHome();
     capMarker();
@@ -454,11 +456,14 @@ void updateTime(){
         checkTime = currentTime.tm_min;
     }
     if((currentTime.tm_min - checkTime) >= updateInterval){ 
-      drawTime(lastUpdate.tm_hour, lastUpdate.tm_min, true);
+      tm lastOffsetTime = addMinutes(lastUpdate);
+      reHome();
+      drawTime(lastOffsetTime.tm_hour, lastOffsetTime.tm_min, true);
       reHome();
       //currentTime = getTime();
       timeUpdateController();
-      drawTime(currentTime.tm_hour, currentTime.tm_min, false);
+      tm offsetTime = addMinutes(currentTime);
+      drawTime(offsetTime.tm_hour, offsetTime.tm_min, false);
       lastUpdate = currentTime;
       // perhaps more time, until the update is finished
       //delay(2000);
@@ -469,17 +474,19 @@ void updateTime(){
 }
 
 //WIP add time offset to account for drawing time
-/*tm addMinutes(tm startTime){
+tm addMinutes(tm startTime){
   startTime.tm_min += 2;
-  if (startTime.tm_min>60){
+  if (startTime.tm_min>=60){
     startTime.tm_hour +=1;
     startTime.tm_min -=60;
   }
-  if (startTime.tm_hour>60){
-    startTime.tm_hour +=1;
-    startTime.tm_min -=60;
+  if (startTime.tm_hour>=24){
+    startTime.tm_mday +=1;
+    startTime.tm_yday +=1;
+    startTime.tm_hour -=24;
   }
-}*/
+  return startTime;
+}
 
 // Erases all the digits and draws current time
 void drawNow(){
@@ -513,7 +520,7 @@ void drawTime(int hrs, int mins, bool erase){
     hrs = 12;
   }
   if(hrs>=10){
-    drawDigit((hrs/10)%10, digitOneOffset, erase);    // 10s place of hours // unsure if this is correct ****************
+    drawDigit((hrs/10)%10, digitOneOffset, erase);
   }
   drawDigit(hrs%10, digitTwoOffset, erase);        // 1s place of hours
   dividingColon(colonOffset, erase);
