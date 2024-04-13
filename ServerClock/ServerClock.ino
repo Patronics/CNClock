@@ -193,7 +193,7 @@ bool offState = false;
 bool onState = false;
 bool pauseState = false;
 
-int updateInterval = 1; // update the clock every five minutes, default
+int updateInterval = 3; // update the clock every three minutes, default
 String Mode = "Off";
 
 // Starts the lcd using the liquid crystal library
@@ -439,19 +439,21 @@ void eraseAll(){
 //  has passed when called, erase if needed
 //uses globals tm currentTime, tm lastUpdate
 void updateTime(){
-  reHome();
   
 
   if(!lastUpdate.tm_hour){
+    reHome();
     drawTime(currentTime.tm_hour, currentTime.tm_min, false);  //testing with eraser mode
     lastUpdate = currentTime;
+    reHome();
+    capMarker();
   }
   else{
-      int checkTime = lastUpdate.tm_min;
-      if(currentTime.tm_min == 0){  //new hour started
+    int checkTime = lastUpdate.tm_min;
+    if(currentTime.tm_min == 0){  //new hour started
         checkTime = currentTime.tm_min;
-      }
-      if((currentTime.tm_min - checkTime) > updateInterval){ 
+    }
+    if((currentTime.tm_min - checkTime) >= updateInterval){ 
       drawTime(lastUpdate.tm_hour, lastUpdate.tm_min, true);
       reHome();
       //currentTime = getTime();
@@ -459,13 +461,25 @@ void updateTime(){
       drawTime(currentTime.tm_hour, currentTime.tm_min, false);
       lastUpdate = currentTime;
       // perhaps more time, until the update is finished
-      delay(2000);
+      //delay(2000);
+      reHome();
+      capMarker();
     }
   }
-
-  reHome();
-  capMarker();
 }
+
+//WIP add time offset to account for drawing time
+/*tm addMinutes(tm startTime){
+  startTime.tm_min += 2;
+  if (startTime.tm_min>60){
+    startTime.tm_hour +=1;
+    startTime.tm_min -=60;
+  }
+  if (startTime.tm_hour>60){
+    startTime.tm_hour +=1;
+    startTime.tm_min -=60;
+  }
+}*/
 
 // Erases all the digits and draws current time
 void drawNow(){
@@ -492,8 +506,8 @@ tm getTime(){
 // Main control to draw out time
 void drawTime(int hrs, int mins, bool erase){
   markerCapHome();
-  goToXY(15,10);
-  delay(1000);
+  goToXY(20,20);
+  movementWait();
   hrs=hrs%12;   //convert 24 hour time to 12 hour time
   if(hrs == 0){
     hrs = 12;
@@ -807,6 +821,17 @@ void displayController(){
   lcd.setCursor(6,1);
   lcd.print(Mode);  
   return;
+
+  serialFlush();
+  sendCommand("M4"); 
+  if (waitForOk(1)){
+    lcd.setCursor(12, 1);
+    lcd.print("CNC Connected    ");
+  } else {
+    lcd.setCursor(12, 1);
+    lcd.print("CNC Not Connected");
+    delay(1000);
+  }
 }
 
 void updateTimeInterval(){
@@ -844,7 +869,7 @@ void sendCommand(char* command){
     Serial.print("\n");
     //Serial1.print(command);
     //Serial1.print("\n");
-    delay(300);
+    delay(200);
 }
 
 ////////////////////////////////
@@ -937,25 +962,32 @@ void reHome(bool x, bool y){
   serialFlush();
   sendCommand(nextCommand); 
   movementWait();
-  waitForOk(30);
+  waitForHome(30);
   delay(500);
   //delay(15000);  //TODO: Replace with checking the response to M119 to remove unneeded waits
   //goToXY(200,200);
 }
 
-bool waitForOk(int maxWaitDelaySeconds){
+bool waitForHome(int maxWaitDelaySeconds){
   lcd.setCursor(12,1);
-  lcd.print("Homing");
+  lcd.print("Homing      ");
+  if(waitForOk(maxWaitDelaySeconds)){
+    lcd.setCursor(12,1);
+    lcd.print("Home.    ");
+    return true;
+  }
+  lcd.setCursor(12,1);
+  lcd.print("Home Failed.");
+  return false;
+}
+
+bool waitForOk(int maxWaitDelaySeconds){
   for(int i=0; i<maxWaitDelaySeconds; i++){
     bool status = Serial.find("ok");
     if(status){
-      lcd.setCursor(12,1);
-      lcd.print("Home.  ");
       return true;
     }
   }
-  lcd.setCursor(12,1);
-  lcd.print("Home Failed");
   return(false);
   //Serial.setTimeout(maxHomeDelay);
   
