@@ -45,6 +45,7 @@ Disconnect control box I/O cable, then program over USB, then reconnect I/O cabl
 /////////////////
 
 #define COMMAND_LENGTH 255
+#define ERASE_HEIGHT_COMMAND "M280 P0 S11"
 
 
 ////////////////////////////////////////////////////
@@ -94,7 +95,7 @@ const int digitFourOffset = 500;
 const int colonOffset = 300;
 
 //offset for eraser to cover same ground as marker, in mm
-const int eraserX = -10;
+const int eraserX = 0;
 const int eraserY = -57;
 
 
@@ -459,6 +460,7 @@ void updateTime(){
       tm lastOffsetTime = addMinutes(lastUpdate);
       reHome();
       drawTime(lastOffsetTime.tm_hour, lastOffsetTime.tm_min, true);
+      delay(500);
       reHome();
       //currentTime = getTime();
       timeUpdateController();
@@ -505,7 +507,7 @@ tm getTime(){
     Serial.println("Failed to get time");
     return date = {};
   }  
-  Serial.printf("time: %d:%d\n", date.tm_hour, date.tm_min);
+  Serial.printf("time: %02d:%02d \n", date.tm_hour, date.tm_min);
   //lcd.printf("Time: %d:%d", date.tm_hour, date.tm_min);
   return date;
 }
@@ -892,7 +894,7 @@ void rest(){
 // Puts the eraser down, ready to erase
 void eraserDown(){
   printf(";eraserDown\n");
-  sendCommand("M280 P0 S9");
+  sendCommand(ERASE_HEIGHT_COMMAND);
 }
 
 // Raises the Marker
