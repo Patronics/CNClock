@@ -24,6 +24,8 @@ Disconnect control box I/O cable, then program over USB, then reconnect I/O cabl
 #include <cmath>
 #include <LiquidCrystal.h>
 
+#include "SPIFFS.h"
+
 
 
 ////////////
@@ -205,6 +207,9 @@ LiquidCrystal lcd(19, 4, 18, 17, 16, 5); //rs, enable, d4,d5,d6,d7
 // Starts the Wifi Server
 WiFiServer server(80); // uneeded, unless using wifi server controller
 
+
+File gcodeFile;
+
 /*
  * The setup does the following:
  *  1.Starts the serial connection between the esp and serial moniter if needed, Serial
@@ -215,8 +220,12 @@ WiFiServer server(80); // uneeded, unless using wifi server controller
 
 int i = 0;
 
+bool isDrawingArt = false;
+
 char newCommandBuf[COMMAND_LENGTH+1];  //for use with the string version of sendCommand
- 
+char lastHeightCommandBuf[COMMAND_LENGTH+1];  //for use with the string version of sendCommand
+
+
 void setup() {
 
   pinMode(offButton, INPUT_PULLUP); 
@@ -231,8 +240,33 @@ void setup() {
 
   //LCD Setup, (columns and rows), and prints the current time
   lcd.begin(24, 2);
+
+  if(!SPIFFS.begin(true)){
+    Serial.println(";An Error has occurred while mounting SPIFFS");
+    return;
+  }
+
+
+  //SPIFFS TESTING:
+
+  gcodeFile = SPIFFS.open("/art1.gcode");
+  if(!gcodeFile){
+    Serial.println(";Failed to open file for reading");
+  }
   
-  Serial.print("Connecting to ");
+  Serial.println(";Art file loaded");
+
+  /*for(int i=0; i<30;i++){
+    Serial.print(";");
+    if(gcodeFile.available()){
+      //[COMMAND_LENGTH];
+      int l = gcodeFile.readBytesUntil('\n', newCommandBuf, sizeof(newCommandBuf));
+      newCommandBuf[l] = 0;
+      sendCommand(newCommandBuf);
+    }
+  }*/
+  
+  Serial.print(";Connecting to ");
   Serial.println(ssid);
   WiFi.begin(ssid, password);
   int counter = 0;
@@ -413,7 +447,6 @@ void test(){
   delay(2000);
 }
 
-//is this correct? After eraseing the colon, using digitTwoOffset, and then colonOffset?
 void eraseAll(){
   reHome();
   drawDigit(8, digitOneOffset, true);
@@ -422,9 +455,9 @@ void eraseAll(){
   delay(500);
   dividingColon(colonOffset, true);
   delay(500);
-  drawDigit(8, digitTwoOffset, true);
+  drawDigit(8, digitThreeOffset, true);
   delay(500);
-  drawDigit(8, colonOffset, true);
+  drawDigit(8, digitFourOffset, true);
   delay(500);
   reHome();
   capMarker();
@@ -444,6 +477,7 @@ void updateTime(){
 
 
   if(!lastUpdate.tm_hour){
+    isDrawingArt=false;
     reHome();
     tm offsetTime = addMinutes(currentTime);
     drawTime(offsetTime.tm_hour, offsetTime.tm_min, false);
@@ -456,7 +490,9 @@ void updateTime(){
     if(currentTime.tm_min == 0){  //new hour started
         checkTime = currentTime.tm_min;
     }
+    //update interval has elapsed, erase then write new time
     if((currentTime.tm_min - checkTime) >= updateInterval){ 
+      isDrawingArt=false;
       tm lastOffsetTime = addMinutes(lastUpdate);
       reHome();
       drawTime(lastOffsetTime.tm_hour, lastOffsetTime.tm_min, true);
@@ -507,7 +543,7 @@ tm getTime(){
     Serial.println("Failed to get time");
     return date = {};
   }  
-  Serial.printf("time: %02d:%02d \n", date.tm_hour, date.tm_min);
+  //Serial.printf(";time: %02d:%02d \n", date.tm_hour, date.tm_min);
   //lcd.printf("Time: %d:%d", date.tm_hour, date.tm_min);
   return date;
 }
@@ -580,7 +616,7 @@ void onLoop(){
   
   modeUpdateController();
   while(onState == true){
-    delay(1000);
+    delay(100);
     timeUpdateController();
     offMode = digitalRead(offButton);
     pauseMode = digitalRead(pauseButton);
@@ -605,8 +641,32 @@ void onLoop(){
       downController();
     }
     updateTime();
+    if(!isDrawingArt){
+      markerCapHome();
+      isDrawingArt=true;
+    }
+    if(gcodeFile.available()){
+      
+      for(int i=0; i<30; i++){
+        if(gcodeFile.available()){
+          //[COMMAND_LENGTH];
+          int l = gcodeFile.readBytesUntil('\n', newCommandBuf, sizeof(newCommandBuf));
+          newCommandBuf[l] = 0;
+          //Serial.print(";"); //for testing, comment out
+          sendCommand(newCommandBuf);
+        } else {
+          gcodeFile.close();
+          break;
+        }
+      }
+    } else {
+      Serial.print(";");
+      Serial.print("gcode file not available:");
+      Serial.print(gcodeFile);
+      isDrawingArt=false;
+
+    }
   }
-  return;
 }
 
 void pauseLoop(){
@@ -814,9 +874,7 @@ void displayController(){
   currentTime = getTime();
 
   lcd.setCursor(6,0);
-  lcd.print(currentTime.tm_hour);
-  lcd.print(":");
-  lcd.print(currentTime.tm_min);
+  lcd.printf("%02d:%02d ",currentTime.tm_hour,currentTime.tm_min);
   
   lcd.setCursor(12,0);
   lcd.print("updIntvl:");
@@ -925,7 +983,7 @@ void markerCapHome(){
 // Lowers to the marker, ready to write
 void markerWrite(){
   printf(";markerWrite\n");
-  sendCommand("M280 P0 S129");
+  sendCommand("M280 P0 S131");
   movementWait();
 }
 
@@ -967,10 +1025,11 @@ void reHome(bool x, bool y){
   if (y){yChar='Y';}
   char nextCommand[COMMAND_LENGTH];
   snprintf(nextCommand,COMMAND_LENGTH, "G28 %c%c",xChar,yChar);
-  delay(500);
+  delay(250);
+  movementWait();
+  delay(1200);
   serialFlush();
   sendCommand(nextCommand); 
-  movementWait();
   waitForHome(30);
   delay(500);
   //delay(15000);  //TODO: Replace with checking the response to M119 to remove unneeded waits
