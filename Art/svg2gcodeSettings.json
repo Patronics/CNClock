@@ -1,0 +1,25 @@
+{
+  "conversion": {
+    "tolerance": 0.002,
+    "feedrate": 3000.0,
+    "dpi": 96.0,
+    "origin": [
+      150.0,
+      0.0
+    ]
+  },
+  "machine": {
+    "supported_functionality": {
+      "circular_interpolation": false
+    },
+    "tool_on_sequence": "M400\nM280 P0 S129",
+    "tool_off_sequence": "M400\nM280 P0 S50",
+    "begin_sequence": "M280 P0 S30\nG0 X20 Y20",
+    "end_sequence": null
+  },
+  "postprocess": {
+    "checksums": false,
+    "line_numbers": false,
+    "newline_before_comment": false
+  }
+}
