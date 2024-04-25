@@ -67,27 +67,31 @@ Disconnect control box I/O cable, then program over USB, then reconnect I/O cabl
 */
 
 //coordinates assume bottom left is 0, once homed
-//segments starting y, top to bottom, in mm
-const int aY = 350;
-const int bY = 340;
-const int cY = 200;
-const int dY = 70;
-const int eY = 200;
-const int fY = 340;
-const int gY = 210;
 
-//segements starting x. left to right, in mm
-const int aX = 10;
-const int bX = 130;
-const int cX = 130;
-const int dX = 10;
-const int eX = 0;
-const int fX = 0;
-const int gX = 10;
+const int timeBaseLine = 70;
+const int segmentGap = 10;
 
 //segment lengths, short are a, d, g and long are b, c, e, f, in mm
 const int shortLength = 110;
-const int longLength = 120; 
+const int longLength = 120;
+
+//segments starting y, top to bottom, in mm
+const int aY = timeBaseLine + 4 * segmentGap + 2 * longLength;  //350
+const int bY = timeBaseLine + 3 * segmentGap + 2 * longLength;  //340
+const int cY = timeBaseLine +     segmentGap +     longLength;  //200
+const int dY = timeBaseLine;   //70
+const int eY = timeBaseLine +     segmentGap +     longLength;  //200
+const int fY = timeBaseLine + 3 * segmentGap + 2 * longLength;  //340
+const int gY = timeBaseLine + 2 * segmentGap +     longLength;  //210
+
+//segements starting x. left to right, in mm
+const int aX = segmentGap;  //10
+const int bX = 2 * segmentGap + shortLength; //130
+const int cX = 2 * segmentGap + shortLength; //130
+const int dX = segmentGap;  //10
+const int eX = 0;
+const int fX = 0;
+const int gX = segmentGap;  //10
 
 //offsets for the different digits, 1 2 : 3 4, in mm
 const int digitOneOffset = -50;
@@ -209,6 +213,7 @@ WiFiServer server(80); // uneeded, unless using wifi server controller
 
 
 File gcodeFile;
+int currentArtFile;
 
 /*
  * The setup does the following:
@@ -223,12 +228,13 @@ int i = 0;
 bool isDrawingArt = false;
 
 char newCommandBuf[COMMAND_LENGTH+1];  //for use with the string version of sendCommand
-char lastHeightCommandBuf[COMMAND_LENGTH+1];  //for use with the string version of sendCommand
+char lastHeightCommandBuf[COMMAND_LENGTH+1];  //for use with resuming art
+char lastPosCommandBuf[COMMAND_LENGTH+1];  //for use with resuming art
 
 
 void setup() {
 
-  pinMode(offButton, INPUT_PULLUP); 
+  pinMode(offButton, INPUT_PULLUP);
   pinMode(upButton, INPUT_PULLUP);
   pinMode(downButton, INPUT_PULLUP);
   pinMode(onButton, INPUT_PULLUP);
@@ -250,6 +256,8 @@ void setup() {
   //SPIFFS TESTING:
 
   gcodeFile = SPIFFS.open("/art1.gcode");
+  currentArtFile = 1;
+
   if(!gcodeFile){
     Serial.println(";Failed to open file for reading");
   }
@@ -288,7 +296,7 @@ void setup() {
   Serial.println("");
   Serial.println("WiFi connected.");
 
-  Serial.println("IP Adress: ");
+  Serial.println("IP Address: ");
   Serial.println(WiFi.localIP());
   server.begin();
   
@@ -487,11 +495,11 @@ void updateTime(){
   }
   else{
     int checkTime = lastUpdate.tm_min;
-    if(currentTime.tm_min == 0){  //new hour started
+    /*if(currentTime.tm_min == 0){  //new hour started
         checkTime = currentTime.tm_min;
-    }
-    //update interval has elapsed, erase then write new time
-    if((currentTime.tm_min - checkTime) >= updateInterval){ 
+    }*/
+    //update interval has elapsed or new hour started, erase then write new time
+    if((currentTime.tm_min - checkTime) >= updateInterval || currentTime.tm_min == 0){ 
       isDrawingArt=false;
       tm lastOffsetTime = addMinutes(lastUpdate);
       reHome();
@@ -524,6 +532,11 @@ tm addMinutes(tm startTime){
     startTime.tm_hour -=24;
   }
   return startTime;
+}
+
+bool prefix(const char *pre, const char *str)
+{
+    return strncmp(pre, str, strlen(pre)) == 0;
 }
 
 // Erases all the digits and draws current time
@@ -641,21 +654,39 @@ void onLoop(){
       downController();
     }
     updateTime();
-    if(!isDrawingArt){
-      markerCapHome();
-      isDrawingArt=true;
-    }
     if(gcodeFile.available()){
-      
+      if(!isDrawingArt){
+        markerCapHome();
+        movementWait();
+        goToXY(30,10);
+        movementWait();
+        sendCommand(lastPosCommandBuf);
+        movementWait();
+        sendCommand(lastHeightCommandBuf);
+        movementWait();
+        isDrawingArt=true;
+      }
       for(int i=0; i<30; i++){
+        delay(250);
         if(gcodeFile.available()){
           //[COMMAND_LENGTH];
           int l = gcodeFile.readBytesUntil('\n', newCommandBuf, sizeof(newCommandBuf));
           newCommandBuf[l] = 0;
+          //cache commands for resuming later
+          if(prefix("G1", newCommandBuf) || prefix("G0",newCommandBuf)) { //movement command
+            strcpy(lastPosCommandBuf,newCommandBuf);
+          } else if(prefix("M280 P0",newCommandBuf)) {
+            strcpy(lastHeightCommandBuf,newCommandBuf);
+          }
           //Serial.print(";"); //for testing, comment out
           sendCommand(newCommandBuf);
         } else {
           gcodeFile.close();
+          if(currentArtFile == 1){
+            currentArtFile = 2;
+            gcodeFile = SPIFFS.open("/art2.gcode");
+            delay(250);
+          }
           break;
         }
       }
