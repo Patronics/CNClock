@@ -821,7 +821,7 @@
   #endif
 #endif
 
-#define HAS_DUAL_Y_STEPPERS
+#define HAS_DUAL_Y_STEPPERS 1
 
 
 #if HAS_DUAL_Y_STEPPERS
@@ -1103,7 +1103,7 @@
 
 // @section motion
 
-#define AXIS_RELATIVE_MODES { false, false, false, false }
+#define AXIS_RELATIVE_MODES { false, false, false }
 
 // Add a Duplicate option for well-separated conjoined nozzles
 //#define MULTI_NOZZLE_DUPLICATION
